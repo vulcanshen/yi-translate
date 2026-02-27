@@ -1,0 +1,23 @@
+{
+  "name": "freebabel",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev:chrome":    "vite build --mode chrome --watch",
+    "dev:firefox":   "vite build --mode firefox --watch",
+    "build:chrome":  "vite build --mode chrome",
+    "build:firefox": "vite build --mode firefox",
+    "build:all":     "npm run build:chrome && npm run build:firefox"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "vite": "^7.3.1"
+  },
+  "dependencies": {
+    "webextension-polyfill": "^0.12.0"
+  }
+}

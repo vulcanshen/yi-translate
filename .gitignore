@@ -1,0 +1,17 @@
+node_modules/
+dist/
+*.zip
+
+.idea/
+.vscode/
+*.swp
+*.swo
+
+.DS_Store
+
+.env
+.env.*
+*.log
+
+.claude/
+CLAUDE.md

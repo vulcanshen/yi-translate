@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 0 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #333;
+        }
+        h1 { margin-bottom: 4px; }
+        .subtitle { color: #666; margin-bottom: 32px; }
+        fieldset {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px 24px;
+            margin-bottom: 20px;
+        }
+        legend {
+            font-weight: 600;
+            font-size: 1.05em;
+            padding: 0 8px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        .hint {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        .hint a { color: #0066cc; }
+        select, input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 0.95em;
+            box-sizing: border-box;
+        }
+        select { margin-bottom: 16px; }
+        .btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95em;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background: #0066cc;
+            color: #fff;
+        }
+        .btn-primary:hover { background: #0052a3; }
+        .status {
+            display: inline-block;
+            margin-left: 12px;
+            font-size: 0.9em;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .status.show { opacity: 1; }
+        .status.ok { color: #2e7d32; }
+        .status.err { color: #c62828; }
+    </style>
+</head>
+<body>
+<h1>FreeBabel 設定</h1>
+<p class="subtitle">開源雙語對照翻譯</p>
+
+<fieldset>
+    <legend>翻譯 API</legend>
+
+    <label for="api-provider">翻譯服務</label>
+    <select id="api-provider">
+        <option value="deepl-free">DeepL API Free</option>
+        <option value="deepl-pro">DeepL API Pro</option>
+    </select>
+
+    <label for="api-key">API Key</label>
+    <p class="hint">
+        前往 <a href="https://www.deepl.com/pro-api" target="_blank" rel="noopener">DeepL API</a> 申請免費金鑰
+    </p>
+    <input type="password" id="api-key" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx:fx" autocomplete="off">
+</fieldset>
+
+<button id="save-btn" class="btn btn-primary">儲存設定</button>
+<span id="status" class="status"></span>
+
+<script type="module" src="./index.js"></script>
+</body>
+</html>
