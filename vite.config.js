@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
-import { copyFileSync } from 'fs';
+import { copyFileSync, mkdirSync } from 'fs';
 
 export default defineConfig(({ mode }) => {
     const isFirefox = mode === 'firefox';
@@ -15,7 +15,6 @@ export default defineConfig(({ mode }) => {
             rollupOptions: {
                 input: {
                     background: resolve(__dirname, 'src/background/index.js'),
-                    popup:      resolve(__dirname, 'src/popup/index.html'),
                     options:    resolve(__dirname, 'src/options/index.html'),
                 },
                 output: {
@@ -35,6 +34,15 @@ export default defineConfig(({ mode }) => {
                         : resolve(__dirname, 'manifest.chrome.json');
                     copyFileSync(src, `${outDir}/manifest.json`);
                     console.log(`✓ Copied manifest → ${outDir}/manifest.json`);
+                    const iconsDir = `${outDir}/icons`;
+                    mkdirSync(iconsDir, { recursive: true });
+                    for (const size of [16, 32, 48, 128]) {
+                        copyFileSync(
+                            resolve(__dirname, `src/icons/icon${size}.png`),
+                            `${iconsDir}/icon${size}.png`,
+                        );
+                    }
+                    console.log(`✓ Copied icons → ${iconsDir}/`);
                 },
             },
             // content script 獨立打包成 IIFE

@@ -8,6 +8,10 @@ browser.runtime.onInstalled.addListener(() => {
     console.log('[譯] Extension installed');
 });
 
+browser.action.onClicked.addListener(() => {
+    browser.runtime.openOptionsPage();
+});
+
 /**
  * Send a chunk of { id, text } items to Google Translate free endpoint.
  * Returns an array of { id, translated } in the same order.
