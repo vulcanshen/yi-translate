@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "FreeBabel",
+  "name": "譯",
   "version": "0.1.0",
-  "description": "Open-source bilingual translation. No servers, no tracking.",
+  "description": "開源雙語對照翻譯。快速閱讀，無伺服器，無追蹤。",
 
   "permissions": [
     "storage",
@@ -12,9 +12,7 @@
   ],
 
   "host_permissions": [
-    "https://api.deepl.com/*",
-    "https://api-free.deepl.com/*",
-    "https://translation.googleapis.com/*"
+    "https://translate.googleapis.com/*"
   ],
 
   "background": {

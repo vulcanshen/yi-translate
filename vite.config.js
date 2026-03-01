@@ -49,7 +49,7 @@ export default defineConfig(({ mode }) => {
                             emptyOutDir: false,  // 不清空，保留其他已打包的檔案
                             lib: {
                                 entry: resolve(__dirname, 'src/content/index.js'),
-                                name: 'FreeBabelContent',
+                                name: 'YiContent',
                                 formats: ['iife'],
                                 fileName: () => 'content/index.js',
                             },

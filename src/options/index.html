@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html>
 <head>
     <meta charset="UTF-8">
     <style>
@@ -33,8 +33,7 @@
             color: #666;
             margin-bottom: 8px;
         }
-        .hint a { color: #0066cc; }
-        select, input[type="text"], input[type="password"] {
+        select {
             width: 100%;
             padding: 8px 10px;
             border: 1px solid #ccc;
@@ -42,7 +41,47 @@
             font-size: 0.95em;
             box-sizing: border-box;
         }
-        select { margin-bottom: 16px; }
+        .color-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .color-row input[type="color"] {
+            width: 40px;
+            height: 32px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 2px;
+            cursor: pointer;
+        }
+        .color-row .color-hex {
+            font-family: monospace;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .checkbox-row label {
+            margin-bottom: 0;
+        }
+        .checkbox-row input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+        }
+        .bg-color-row { margin-left: 24px; }
+        .preview-box {
+            border-left: 3px solid #0066cc;
+            padding-left: 8px;
+            margin-top: 12px;
+            color: #0066cc;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
         .btn {
             padding: 8px 20px;
             border: none;
@@ -68,26 +107,40 @@
     </style>
 </head>
 <body>
-<h1>FreeBabel 設定</h1>
-<p class="subtitle">開源雙語對照翻譯</p>
+<h1 data-i18n="optionsTitle">譯 - Settings</h1>
+<p class="subtitle" data-i18n="subtitle">Open-source bilingual translation</p>
 
 <fieldset>
-    <legend>翻譯 API</legend>
+    <legend data-i18n="prefSection">Translation</legend>
 
-    <label for="api-provider">翻譯服務</label>
-    <select id="api-provider">
-        <option value="deepl-free">DeepL API Free</option>
-        <option value="deepl-pro">DeepL API Pro</option>
-    </select>
-
-    <label for="api-key">API Key</label>
-    <p class="hint">
-        前往 <a href="https://www.deepl.com/pro-api" target="_blank" rel="noopener">DeepL API</a> 申請免費金鑰
-    </p>
-    <input type="password" id="api-key" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx:fx" autocomplete="off">
+    <label for="target-lang" data-i18n="targetLangLabel">Target language</label>
+    <p class="hint" data-i18n="targetLangHint">Uses Google Translate (free). No API key required.</p>
+    <select id="target-lang"></select>
 </fieldset>
 
-<button id="save-btn" class="btn btn-primary">儲存設定</button>
+<fieldset>
+    <legend data-i18n="styleSection">Style</legend>
+
+    <label data-i18n="textColor">Text color</label>
+    <div class="color-row">
+        <input type="color" id="text-color" value="#0066cc">
+        <span class="color-hex" id="text-color-hex">#0066cc</span>
+    </div>
+
+    <div class="checkbox-row">
+        <input type="checkbox" id="bg-enabled">
+        <label for="bg-enabled" data-i18n="showBgColor">Show background color</label>
+    </div>
+    <div class="color-row bg-color-row" id="bg-color-row">
+        <input type="color" id="bg-color" value="#f0f7ff">
+        <span class="color-hex" id="bg-color-hex">#f0f7ff</span>
+    </div>
+
+    <label data-i18n="preview">Preview</label>
+    <div id="preview" class="preview-box" data-i18n="previewText">This is a sample translation preview.</div>
+</fieldset>
+
+<button id="save-btn" class="btn btn-primary" data-i18n="save">Save</button>
 <span id="status" class="status"></span>
 
 <script type="module" src="./index.js"></script>
