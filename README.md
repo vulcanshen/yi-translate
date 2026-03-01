@@ -70,11 +70,10 @@ npm run build:all     # 同時打包 Chrome + Firefox
 src/
 ├── background/   Service worker，發送翻譯請求
 ├── content/      注入網頁，雙語排版、浮動按鈕、劃詞翻譯
-├── popup/        點擊 icon 的小視窗
 ├── options/      設定頁面（語言、樣式、劃詞翻譯）
 └── shared/       共用常數、i18n、storage 工具
 ```
 
 ## 授權
 
-ISC
+[MIT](LICENSE)
