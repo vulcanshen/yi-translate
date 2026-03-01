@@ -46,6 +46,8 @@ export const DEFAULTS = {
   translationTextColor: '#0066cc',
   translationBgColor: '#f0f7ff',
   showTranslationBg: false,
+  selectionTranslate: true,
+  selectionTargetLang: detectDefaultTargetLang(),
 };
 
 // Target language options

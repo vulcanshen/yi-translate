@@ -80,7 +80,7 @@ browser.runtime.onMessage.addListener((message, _sender) => {
     return (async () => {
         try {
             const settings = await getSettings();
-            const { targetLang } = settings;
+            const targetLang = message.targetLang || settings.targetLang;
 
             const { items } = message;
             if (!items || items.length === 0) {

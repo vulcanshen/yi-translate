@@ -9,6 +9,7 @@ import {
     MIN_TEXT_LENGTH,
     OBSERVER_MARGIN,
     TRANSLATE_DEBOUNCE,
+    TARGET_LANGUAGES,
 } from '../shared/constants.js';
 import { getSettings } from '../shared/storage.js';
 import { t } from '../shared/i18n.js';
@@ -31,7 +32,6 @@ const ID_ATTR = 'data-yi-id';
 // Floating button references
 let fabHost = null;
 let fabBtn = null;
-let fabSpinner = null;
 
 function injectStyles(textColor, bgColor) {
     let style = document.getElementById('yi-styles');
@@ -54,14 +54,31 @@ function injectStyles(textColor, bgColor) {
             line-height: 1.6;
             ${bgRule}
         }
+        .yi-badge {
+            display: inline-block;
+            font-size: 0.75em;
+            font-weight: 700;
+            background: ${textColor};
+            color: #fff;
+            border-radius: 3px;
+            padding: 0 4px;
+            margin-right: 4px;
+            vertical-align: middle;
+            line-height: 1.6;
+        }
+        .${TRANSLATION_CLASS}.yi-loading {
+            animation: yi-fade 1.5s ease-in-out infinite;
+        }
+        @keyframes yi-fade {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
         .${HIDDEN_CLASS} { display: none !important; }
     `;
 }
 
-function setWorking(active) {
-    if (fabSpinner) {
-        fabSpinner.classList.toggle('active', active);
-    }
+function setWorking(_active) {
+    // Loading state is now shown per-paragraph via yi-loading placeholders
 }
 
 function updateFabAppearance() {
@@ -123,24 +140,6 @@ function createFab() {
         .fab-btn:hover {
             box-shadow: 0 4px 16px rgba(0,0,0,0.4);
         }
-        .fab-spinner {
-            position: absolute;
-            inset: -4px;
-            border-radius: 50%;
-            border: 2.5px solid transparent;
-            border-top-color: rgba(255,255,255,0.9);
-            border-right-color: rgba(255,255,255,0.3);
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        .fab-spinner.active {
-            opacity: 1;
-            animation: fab-spin 0.8s linear infinite;
-        }
-        @keyframes fab-spin {
-            to { transform: rotate(360deg); }
-        }
     `;
 
     const wrap = document.createElement('div');
@@ -154,11 +153,7 @@ function createFab() {
     fabBtn.textContent = '譯';
     fabBtn.title = t.enableTip;
 
-    fabSpinner = document.createElement('div');
-    fabSpinner.className = 'fab-spinner';
-
     container.appendChild(fabBtn);
-    container.appendChild(fabSpinner);
     wrap.appendChild(container);
     shadow.appendChild(style);
     shadow.appendChild(wrap);
@@ -266,7 +261,6 @@ async function sendWithRetry(items) {
             });
 
             if (!response) {
-                setWorking(false);
                 return null;
             }
 
@@ -282,7 +276,6 @@ async function sendWithRetry(items) {
             return response;
         } catch (err) {
             console.error('[譯] Translation error:', err.message);
-            setWorking(false);
             return null;
         }
     }
@@ -295,6 +288,7 @@ async function sendWithRetry(items) {
 async function flushPending() {
     if (busy || pending.size === 0) return;
     busy = true;
+    setWorking(true);
 
     try {
         while (pending.size > 0 && enabled) {
@@ -304,49 +298,63 @@ async function flushPending() {
             const toTranslate = elements.filter((el) => !el.hasAttribute(TRANSLATED_ATTR));
             if (toTranslate.length === 0) continue;
 
-            setWorking(true);
-
             for (let i = 0; i < toTranslate.length; i += BATCH_SIZE) {
                 if (!enabled) return;
                 const batch = toTranslate.slice(i, i + BATCH_SIZE);
 
-                // Build items with ID + text
-                const items = batch.map((el) => ({
-                    id: assignId(el),
-                    text: el.textContent.trim(),
-                }));
+                // Build items with ID + text, insert loading placeholders
+                const items = batch.map((el) => {
+                    const id = assignId(el);
+                    const text = el.textContent.trim();
+                    if (!el.hasAttribute(TRANSLATED_ATTR)) {
+                        el.setAttribute(TRANSLATED_ATTR, id);
+                        const span = document.createElement('span');
+                        span.className = `${TRANSLATION_CLASS} yi-loading`;
+                        span.setAttribute('data-yi-for', id);
+                        span.innerHTML = '<span class="yi-badge">譯</span> ⋯';
+                        el.appendChild(span);
+                    }
+                    return { id, text };
+                });
 
                 const response = await sendWithRetry(items);
                 if (!response) return;
 
                 if (!response.success) {
                     console.warn('[譯] Batch failed, skipping:', response.error);
+                    // Remove failed placeholders
+                    for (const item of items) {
+                        const ph = document.querySelector(`[data-yi-for="${item.id}"].yi-loading`);
+                        if (ph) ph.remove();
+                        const el = document.querySelector(`[${ID_ATTR}="${item.id}"]`);
+                        if (el) el.removeAttribute(TRANSLATED_ATTR);
+                    }
                     continue;
                 }
 
-                // Insert translations using ID to find the correct element
+                // Replace placeholders with actual translations
                 for (const result of response.results) {
+                    const span = document.querySelector(`[data-yi-for="${result.id}"]`);
+                    if (!span) continue;
+
                     const el = document.querySelector(`[${ID_ATTR}="${result.id}"]`);
-                    if (!el || el.hasAttribute(TRANSLATED_ATTR)) continue;
+                    const originalText = el ? el.textContent.trim() : '';
+                    // If translation is same as original, remove placeholder
+                    if (result.translated === originalText || !result.translated) {
+                        span.remove();
+                        if (el) el.removeAttribute(TRANSLATED_ATTR);
+                        continue;
+                    }
 
-                    const originalText = el.textContent.trim();
-                    if (result.translated === originalText) continue;
-
-                    el.setAttribute(TRANSLATED_ATTR, result.id);
-                    const span = document.createElement('span');
-                    span.className = TRANSLATION_CLASS;
-                    span.setAttribute('data-yi-for', result.id);
                     span.textContent = result.translated;
-                    el.appendChild(span);
+                    span.classList.remove('yi-loading');
                     translatedCount++;
                 }
             }
         }
 
-        if (enabled) {
-            setWorking(false);
-        }
     } finally {
+        setWorking(false);
         busy = false;
         if (pending.size > 0 && enabled) {
             scheduleFlush();
@@ -450,3 +458,323 @@ browser.runtime.onMessage.addListener((message) => {
 
 // Create floating button on load
 createFab();
+
+// ─── Selection Translation ───────────────────────────────────────────
+
+let selHost = null;
+let selShadow = null;
+let selTriggerEl = null;
+let selPopupEl = null;
+let selText = '';
+let selLang = '';
+let selEnabled = true;
+let selDefaultLang = '';
+
+function createSelHost() {
+    selHost = document.createElement('div');
+    selHost.id = 'yi-sel-host';
+    selHost.style.cssText = 'position:fixed;z-index:2147483646;top:0;left:0;width:0;height:0;pointer-events:none;';
+    selShadow = selHost.attachShadow({ mode: 'closed' });
+
+    const style = document.createElement('style');
+    style.textContent = `
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        .sel-trigger {
+            position: fixed;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid #0066cc;
+            background: #fff;
+            color: #0066cc;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+            transition: transform 0.1s;
+            z-index: 2147483646;
+        }
+        .sel-trigger:hover { transform: scale(1.1); }
+        .sel-popup {
+            position: fixed;
+            width: 320px;
+            max-height: 260px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            pointer-events: auto;
+            z-index: 2147483646;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            color: #333;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .sel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            border-bottom: 1px solid #eee;
+            gap: 8px;
+        }
+        .sel-header select {
+            flex: 1;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-size: 13px;
+            background: #fff;
+            color: #333;
+        }
+        .sel-close {
+            width: 24px;
+            height: 24px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+        .sel-close:hover { background: #f0f0f0; color: #333; }
+        .sel-body {
+            padding: 12px;
+            overflow-y: auto;
+            flex: 1;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .sel-body.loading { color: #999; }
+        .sel-body.error { color: #c62828; }
+        @media (prefers-color-scheme: dark) {
+            .sel-popup {
+                background: #2a2a2a;
+                border-color: #444;
+                color: #e0e0e0;
+            }
+            .sel-header { border-bottom-color: #444; }
+            .sel-header select {
+                background: #333;
+                border-color: #555;
+                color: #e0e0e0;
+            }
+            .sel-close { color: #888; }
+            .sel-close:hover { background: #3a3a3a; color: #e0e0e0; }
+            .sel-body.loading { color: #888; }
+            .sel-body.error { color: #ef5350; }
+        }
+    `;
+    selShadow.appendChild(style);
+    document.documentElement.appendChild(selHost);
+}
+
+function showTrigger(x, y) {
+    dismissSelection();
+    selTriggerEl = document.createElement('button');
+    selTriggerEl.className = 'sel-trigger';
+    selTriggerEl.textContent = '譯';
+    selTriggerEl.style.left = x + 'px';
+    selTriggerEl.style.top = y + 'px';
+    selShadow.appendChild(selTriggerEl);
+
+    selTriggerEl.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const sel = window.getSelection();
+        selText = sel ? sel.toString().trim() : '';
+    });
+
+    selTriggerEl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showPopup();
+    });
+}
+
+function showPopup() {
+    if (selTriggerEl) {
+        selTriggerEl.remove();
+        selTriggerEl = null;
+    }
+    if (!selText) return;
+
+    selPopupEl = document.createElement('div');
+    selPopupEl.className = 'sel-popup';
+
+    // Header
+    const header = document.createElement('div');
+    header.className = 'sel-header';
+
+    const langSelect = document.createElement('select');
+    for (const lang of TARGET_LANGUAGES) {
+        const opt = document.createElement('option');
+        opt.value = lang.value;
+        opt.textContent = lang.label;
+        langSelect.appendChild(opt);
+    }
+    langSelect.value = selLang;
+    langSelect.addEventListener('change', () => {
+        selLang = langSelect.value;
+        doSelectionTranslate();
+    });
+
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'sel-close';
+    closeBtn.textContent = '✕';
+    closeBtn.title = t.selectionClose;
+    closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dismissSelection();
+    });
+
+    header.appendChild(langSelect);
+    header.appendChild(closeBtn);
+
+    // Body
+    const body = document.createElement('div');
+    body.className = 'sel-body loading';
+    body.textContent = t.selectionTranslating;
+
+    selPopupEl.appendChild(header);
+    selPopupEl.appendChild(body);
+    selShadow.appendChild(selPopupEl);
+
+    // Position: try below selection area, or above if not enough space
+    positionPopup();
+    doSelectionTranslate();
+}
+
+function positionPopup() {
+    if (!selPopupEl) return;
+    const sel = window.getSelection();
+    let anchorX = 0, anchorY = 0;
+    if (sel && sel.rangeCount > 0) {
+        const rect = sel.getRangeAt(0).getBoundingClientRect();
+        anchorX = rect.left;
+        anchorY = rect.bottom + 6;
+        // If popup would go below viewport, position above
+        if (anchorY + 260 > window.innerHeight) {
+            anchorY = rect.top - 260 - 6;
+            if (anchorY < 0) anchorY = 8;
+        }
+    }
+    // Clamp horizontal
+    const popupWidth = 320;
+    if (anchorX + popupWidth > window.innerWidth - 8) {
+        anchorX = window.innerWidth - popupWidth - 8;
+    }
+    if (anchorX < 8) anchorX = 8;
+    selPopupEl.style.left = anchorX + 'px';
+    selPopupEl.style.top = anchorY + 'px';
+}
+
+async function doSelectionTranslate() {
+    if (!selPopupEl) return;
+    const body = selPopupEl.querySelector('.sel-body');
+    if (!body) return;
+
+    body.className = 'sel-body loading';
+    body.textContent = t.selectionTranslating;
+
+    try {
+        const response = await browser.runtime.sendMessage({
+            action: ACTION.TRANSLATE,
+            items: [{ id: 'sel-0', text: selText }],
+            targetLang: selLang,
+        });
+        if (!selPopupEl) return; // dismissed while waiting
+        if (response && response.success && response.results && response.results.length > 0) {
+            body.className = 'sel-body';
+            body.textContent = response.results[0].translated;
+        } else {
+            body.className = 'sel-body error';
+            body.textContent = t.selectionError;
+        }
+    } catch {
+        if (!selPopupEl) return;
+        body.className = 'sel-body error';
+        body.textContent = t.selectionError;
+    }
+}
+
+function dismissSelection() {
+    if (selTriggerEl) {
+        selTriggerEl.remove();
+        selTriggerEl = null;
+    }
+    if (selPopupEl) {
+        selPopupEl.remove();
+        selPopupEl = null;
+    }
+    selText = '';
+}
+
+function initSelectionTranslate() {
+    document.addEventListener('mouseup', (e) => {
+        if (!selEnabled) return;
+        // Ignore if clicking inside our shadow DOM
+        if (e.composedPath().includes(selHost)) return;
+
+        // Small delay to let selection settle
+        setTimeout(() => {
+            const sel = window.getSelection();
+            const text = sel ? sel.toString().trim() : '';
+            if (text.length < 2) return;
+
+            const range = sel.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+            // Position trigger at bottom-right of selection
+            const x = Math.min(rect.right + 4, window.innerWidth - 36);
+            const y = rect.bottom + 4;
+            showTrigger(x, y);
+        }, 10);
+    });
+
+    document.addEventListener('mousedown', (e) => {
+        if (e.composedPath().includes(selHost)) return;
+        dismissSelection();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            dismissSelection();
+        }
+    });
+
+    document.addEventListener('scroll', () => {
+        dismissSelection();
+    }, true);
+}
+
+function loadSelectionSettings() {
+    getSettings().then((settings) => {
+        selEnabled = settings.selectionTranslate !== false;
+        selDefaultLang = settings.selectionTargetLang || settings.targetLang;
+        selLang = selDefaultLang;
+    });
+
+    // Listen for settings changes
+    browser.storage.onChanged.addListener((changes) => {
+        if (changes.settings) {
+            const s = { ...changes.settings.newValue };
+            selEnabled = s.selectionTranslate !== false;
+            selDefaultLang = s.selectionTargetLang || s.targetLang;
+            selLang = selDefaultLang;
+        }
+    });
+}
+
+createSelHost();
+initSelectionTranslate();
+loadSelectionSettings();

@@ -119,6 +119,19 @@
 </fieldset>
 
 <fieldset>
+    <legend data-i18n="selectionSection">Selection translation</legend>
+
+    <div class="checkbox-row">
+        <input type="checkbox" id="selection-enabled">
+        <label for="selection-enabled" data-i18n="selectionEnable">Enable selection translation</label>
+    </div>
+    <div id="selection-lang-row" style="display:none; margin-top: 12px;">
+        <label for="selection-target-lang" data-i18n="selectionLangLabel">Default language for selection</label>
+        <select id="selection-target-lang"></select>
+    </div>
+</fieldset>
+
+<fieldset>
     <legend data-i18n="styleSection">Style</legend>
 
     <label data-i18n="textColor">Text color</label>

@@ -10,6 +10,9 @@ for (const el of document.querySelectorAll('[data-i18n]')) {
 }
 
 const targetLangEl = document.getElementById('target-lang');
+const selEnabledEl = document.getElementById('selection-enabled');
+const selLangEl = document.getElementById('selection-target-lang');
+const selLangRow = document.getElementById('selection-lang-row');
 const textColorEl = document.getElementById('text-color');
 const textColorHex = document.getElementById('text-color-hex');
 const bgEnabledEl = document.getElementById('bg-enabled');
@@ -20,13 +23,22 @@ const previewEl = document.getElementById('preview');
 const saveBtn = document.getElementById('save-btn');
 const statusEl = document.getElementById('status');
 
-// Populate target language dropdown
+// Populate target language dropdowns
 for (const lang of TARGET_LANGUAGES) {
     const option = document.createElement('option');
     option.value = lang.value;
     option.textContent = lang.label;
     targetLangEl.appendChild(option);
+
+    const option2 = document.createElement('option');
+    option2.value = lang.value;
+    option2.textContent = lang.label;
+    selLangEl.appendChild(option2);
 }
+
+selEnabledEl.addEventListener('change', () => {
+    selLangRow.style.display = selEnabledEl.checked ? '' : 'none';
+});
 
 function updatePreview() {
     const tc = textColorEl.value;
@@ -70,6 +82,9 @@ getSettings().then((settings) => {
     bgEnabledEl.checked = !!settings.showTranslationBg;
     bgColorEl.value = settings.translationBgColor || DEFAULTS.translationBgColor;
     bgColorHex.textContent = bgColorEl.value;
+    selEnabledEl.checked = settings.selectionTranslate !== false;
+    selLangEl.value = settings.selectionTargetLang || DEFAULTS.selectionTargetLang;
+    selLangRow.style.display = selEnabledEl.checked ? '' : 'none';
     updatePreview();
 });
 
@@ -80,6 +95,8 @@ saveBtn.addEventListener('click', async () => {
     settings.translationTextColor = textColorEl.value;
     settings.showTranslationBg = bgEnabledEl.checked;
     settings.translationBgColor = bgColorEl.value;
+    settings.selectionTranslate = selEnabledEl.checked;
+    settings.selectionTargetLang = selLangEl.value;
     await saveSettings(settings);
     showStatus(t.saved, true);
 });
