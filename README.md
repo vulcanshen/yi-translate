@@ -16,53 +16,31 @@
 
 使用 Google Translate 免費端點（`translate.googleapis.com`），不需要 API Key，翻譯請求直連 Google，不經過任何第三方伺服器。
 
-## 支援平台
-
-| 平台 | Manifest |
-|------|----------|
-| Chrome / Edge / Brave | Manifest V3 |
-| Firefox | Manifest V2 |
-
 ## 支援翻譯語言
 
 繁體中文、簡體中文、English、日本語、한국어、Deutsch、Français、Español
 
 ## 安裝
 
-### 從原始碼安裝
+| 平台 | 連結 |
+|------|------|
+| Chrome / Edge / Brave | [Chrome Web Store](https://chromewebstore.google.com/) <!-- 審核中，通過後更新連結 --> |
+| Firefox | [Firefox Add-ons](https://addons.mozilla.org/) <!-- 審核中，通過後更新連結 --> |
+
+## 從原始碼建置
 
 ```bash
-git clone https://github.com/<your-username>/freebabel.git
-cd freebabel
+git clone https://github.com/vulcanshen/yi-translate.git
+cd yi-translate
 npm install
+
+npm run build:chrome    # 打包 Chrome
+npm run build:firefox   # 打包 Firefox
+npm run build:all       # 同時打包兩個平台
+npm run dev:chrome      # watch mode
 ```
 
-#### Chrome
-
-```bash
-npm run build:chrome
-```
-
-1. 開啟 `chrome://extensions`
-2. 啟用「開發人員模式」
-3. 點「載入未封裝項目」，選擇 `dist/chrome` 資料夾
-
-#### Firefox
-
-```bash
-npm run build:firefox
-```
-
-1. 開啟 `about:debugging#/runtime/this-firefox`
-2. 點「載入暫時性附加元件」，選擇 `dist/firefox/manifest.json`
-
-## 開發
-
-```bash
-npm run dev:chrome    # watch mode，自動重建
-npm run dev:firefox   # watch mode (Firefox)
-npm run build:all     # 同時打包 Chrome + Firefox
-```
+產出在 `dist/chrome` 或 `dist/firefox`，可用開發者模式載入測試。
 
 ## 專案結構
 
