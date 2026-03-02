@@ -1,3 +1,5 @@
+![譯](src/icons/icon128.png)
+
 # 譯
 
 開源雙語對照翻譯 Browser Extension，快速閱讀用。
