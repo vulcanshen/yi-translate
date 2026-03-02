@@ -8,8 +8,18 @@ browser.runtime.onInstalled.addListener(() => {
     console.log('[譯] Extension installed');
 });
 
-browser.action.onClicked.addListener(() => {
-    browser.runtime.openOptionsPage();
+// Chrome: 點擊 action icon 直接開啟 side panel
+if (typeof chrome !== 'undefined' && chrome.sidePanel) {
+    chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
+}
+
+// Firefox: 點擊 action icon 切換 sidebar；其他平台 fallback 開 options
+browser.action.onClicked.addListener(async () => {
+    if (typeof browser.sidebarAction !== 'undefined') {
+        browser.sidebarAction.toggle();
+    } else {
+        browser.runtime.openOptionsPage();
+    }
 });
 
 /**
