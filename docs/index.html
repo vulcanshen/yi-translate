@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>譯 — 開源雙語對照翻譯 Browser Extension</title>
+  <meta name="description" content="不需要 AI、不需要 API Key、不需要註冊帳號。開源雙語對照翻譯，快速閱讀外文網頁。">
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #fafafa;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    /* Hero */
+    .hero {
+      text-align: center;
+      padding: 64px 24px 48px;
+      background: #fff;
+      border-bottom: 1px solid #eee;
+    }
+
+    .hero-logo {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 16px;
+    }
+
+    .hero h1 {
+      font-size: 48px;
+      font-weight: 700;
+      color: #0066cc;
+      margin-bottom: 8px;
+    }
+
+    .hero-subtitle {
+      font-size: 20px;
+      color: #555;
+      margin-bottom: 12px;
+    }
+
+    .hero-highlight {
+      font-size: 15px;
+      color: #888;
+      margin-bottom: 32px;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+
+    .btn:hover {
+      opacity: 0.85;
+    }
+
+    .btn-chrome {
+      background: #0066cc;
+      color: #fff;
+    }
+
+    .btn-firefox {
+      background: #fff;
+      color: #0066cc;
+      border: 2px solid #0066cc;
+    }
+
+    .btn svg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    /* Features */
+    .features {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 48px 24px;
+    }
+
+    .features h2 {
+      text-align: center;
+      font-size: 24px;
+      color: #333;
+      margin-bottom: 32px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .card img {
+      width: 100%;
+      display: block;
+    }
+
+    .card-body {
+      padding: 16px 20px;
+    }
+
+    .card-body h3 {
+      font-size: 17px;
+      color: #0066cc;
+      margin-bottom: 4px;
+    }
+
+    .card-body p {
+      font-size: 14px;
+      color: #666;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 32px 24px;
+      border-top: 1px solid #eee;
+      font-size: 14px;
+      color: #999;
+    }
+
+    .footer a {
+      color: #0066cc;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Desktop */
+    @media (min-width: 768px) {
+      .cards {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hero -->
+  <section class="hero">
+    <img src="images/icon.svg" alt="譯 Logo" class="hero-logo">
+    <h1>譯</h1>
+    <p class="hero-subtitle">開源雙語對照翻譯 Browser Extension</p>
+    <p class="hero-highlight">不需要 AI、不需要 API Key、不需要註冊帳號</p>
+    <div class="hero-buttons">
+      <a class="btn btn-chrome" href="#" title="審核中，即將上架">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 3.5a6.5 6.5 0 0 1 5.6 3.2h-4.3A3.5 3.5 0 0 0 8.8 10l-2.1-3.7A6.5 6.5 0 0 1 12 5.5zM5.5 12c0-.7.1-1.4.3-2l2.2 3.7a3.5 3.5 0 0 0 4.4 1.6l-2.2 3.7A6.5 6.5 0 0 1 5.5 12zm8 6.2 2.1-3.7A3.5 3.5 0 0 0 15.2 9h4.3a6.5 6.5 0 0 1-6 9.2z"/></svg>
+        Chrome Web Store
+      </a>
+      <a class="btn btn-firefox" href="#" title="審核中，即將上架">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+        Firefox Add-ons
+      </a>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features">
+    <h2>功能展示</h2>
+    <div class="cards">
+      <div class="card">
+        <img src="images/yi-full-page-translate.jpg" alt="全頁雙語對照翻譯">
+        <div class="card-body">
+          <h3>全頁雙語對照</h3>
+          <p>一鍵翻譯整頁，原文與譯文並列顯示，閱讀不中斷。</p>
+        </div>
+      </div>
+      <div class="card">
+        <img src="images/yi-text-selection-translate.jpg" alt="劃詞翻譯 + TTS 發音">
+        <div class="card-body">
+          <h3>劃詞翻譯 + TTS 發音</h3>
+          <p>選取文字即時翻譯，支援語音朗讀，學習更高效。</p>
+        </div>
+      </div>
+      <div class="card">
+        <img src="images/yi-chrome-settings.jpg" alt="側邊欄設定面板">
+        <div class="card-body">
+          <h3>側邊欄設定</h3>
+          <p>自訂目標語言、翻譯樣式與顏色，打造專屬閱讀體驗。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>
+      <a href="https://github.com/vulcanshen/yi-translate">GitHub</a>
+      &nbsp;·&nbsp;
+      MIT License
+    </p>
+  </footer>
+
+</body>
+</html>
