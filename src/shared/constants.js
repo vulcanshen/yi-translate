@@ -1,6 +1,7 @@
 // Message action types
 export const ACTION = {
   TRANSLATE: 'yi:translate',
+  TTS: 'yi:tts',
   TOGGLE: 'yi:toggle',
   GET_STATE: 'yi:get-state',
 };

@@ -1,6 +1,5 @@
-![譯](src/icons/icon128.png)
 
-# 譯
+<img src="src/icons/icon.svg" width="48" height="48" alt="譯">
 
 開源雙語對照翻譯 Browser Extension，快速閱讀用。
 
@@ -24,10 +23,10 @@
 
 ## 安裝
 
-| 平台 | 連結 |
-|------|------|
+| 平台                    | 連結                                                                          |
+|-----------------------|-----------------------------------------------------------------------------|
 | Chrome / Edge / Brave | [Chrome Web Store](https://chromewebstore.google.com/) <!-- 審核中，通過後更新連結 --> |
-| Firefox | [Firefox Add-ons](https://addons.mozilla.org/) <!-- 審核中，通過後更新連結 --> |
+| Firefox               | [Firefox Add-ons](https://addons.mozilla.org/) <!-- 審核中，通過後更新連結 -->         |
 
 ## 從原始碼建置
 

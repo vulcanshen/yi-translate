@@ -116,12 +116,12 @@ function createFab() {
         }
         .fab-container {
             position: relative;
-            width: 48px;
-            height: 48px;
+            width: 36px;
+            height: 36px;
         }
         .fab-btn {
-            width: 48px;
-            height: 48px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             border: none;
             background: #888;
@@ -134,7 +134,7 @@ function createFab() {
             transition: background 0.2s, box-shadow 0.2s;
             touch-action: none;
             padding: 0;
-            font-size: 20px;
+            font-size: 16px;
             font-weight: 700;
         }
         .fab-btn:hover {
@@ -459,6 +459,37 @@ browser.runtime.onMessage.addListener((message) => {
 // Create floating button on load
 createFab();
 
+// ─── TTS (Text-to-Speech) ────────────────────────────────────────────
+
+const TTS_ICON = '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" fill="currentColor"/></svg>';
+
+let currentAudio = null;
+
+async function speakText(text, langCode) {
+    stopSpeech();
+    try {
+        const response = await browser.runtime.sendMessage({
+            action: ACTION.TTS,
+            text,
+            lang: langCode,
+        });
+        if (response && response.success) {
+            currentAudio = new Audio(response.dataUrl);
+            currentAudio.play().catch(() => {});
+        }
+    } catch {
+        // TTS unavailable
+    }
+}
+
+function stopSpeech() {
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        currentAudio = null;
+    }
+}
+
 // ─── Selection Translation ───────────────────────────────────────────
 
 let selHost = null;
@@ -502,7 +533,7 @@ function createSelHost() {
         .sel-popup {
             position: fixed;
             width: 320px;
-            max-height: 260px;
+            max-height: 340px;
             background: #fff;
             border: 1px solid #ddd;
             border-radius: 10px;
@@ -548,16 +579,59 @@ function createSelHost() {
             flex-shrink: 0;
         }
         .sel-close:hover { background: #f0f0f0; color: #333; }
-        .sel-body {
-            padding: 12px;
+        .sel-original {
+            padding: 8px 12px;
+            display: flex;
+            align-items: flex-start;
+            gap: 4px;
+        }
+        .sel-original-text {
+            flex: 1;
+            font-size: 13px;
+            color: #888;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-word;
+            max-height: 80px;
             overflow-y: auto;
+        }
+        .sel-divider {
+            height: 1px;
+            background: #eee;
+            margin: 0 12px;
+        }
+        .sel-body-wrap {
+            padding: 8px 12px;
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            align-items: flex-start;
+            gap: 4px;
+        }
+        .sel-body-text {
             flex: 1;
             line-height: 1.6;
             white-space: pre-wrap;
             word-break: break-word;
         }
-        .sel-body.loading { color: #999; }
-        .sel-body.error { color: #c62828; }
+        .sel-body-text.loading { color: #999; }
+        .sel-body-text.error { color: #c62828; }
+        .sel-tts-btn {
+            width: 24px;
+            height: 24px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            flex-shrink: 0;
+            padding: 0;
+        }
+        .sel-tts-btn:hover { color: #0066cc; background: #f0f0f0; }
         @media (prefers-color-scheme: dark) {
             .sel-popup {
                 background: #2a2a2a;
@@ -572,8 +646,12 @@ function createSelHost() {
             }
             .sel-close { color: #888; }
             .sel-close:hover { background: #3a3a3a; color: #e0e0e0; }
-            .sel-body.loading { color: #888; }
-            .sel-body.error { color: #ef5350; }
+            .sel-original-text { color: #999; }
+            .sel-divider { background: #444; }
+            .sel-body-text.loading { color: #888; }
+            .sel-body-text.error { color: #ef5350; }
+            .sel-tts-btn { color: #888; }
+            .sel-tts-btn:hover { color: #4da6ff; background: #3a3a3a; }
         }
     `;
     selShadow.appendChild(style);
@@ -641,16 +719,46 @@ function showPopup() {
     header.appendChild(langSelect);
     header.appendChild(closeBtn);
 
-    // Body
-    const body = document.createElement('div');
-    body.className = 'sel-body loading';
-    body.textContent = t.selectionTranslating;
+    // Original text area
+    const original = document.createElement('div');
+    original.className = 'sel-original';
+
+    const originalText = document.createElement('div');
+    originalText.className = 'sel-original-text';
+    originalText.textContent = selText;
+
+    const pageLang = document.documentElement.lang || 'en';
+    const originalTts = document.createElement('button');
+    originalTts.className = 'sel-tts-btn';
+    originalTts.innerHTML = TTS_ICON;
+    originalTts.addEventListener('click', (e) => {
+        e.stopPropagation();
+        speakText(selText, pageLang);
+    });
+
+    original.appendChild(originalText);
+    original.appendChild(originalTts);
+
+    // Divider
+    const divider = document.createElement('div');
+    divider.className = 'sel-divider';
+
+    // Translation area
+    const bodyWrap = document.createElement('div');
+    bodyWrap.className = 'sel-body-wrap';
+
+    const bodyText = document.createElement('div');
+    bodyText.className = 'sel-body-text loading';
+    bodyText.textContent = t.selectionTranslating;
+
+    bodyWrap.appendChild(bodyText);
 
     selPopupEl.appendChild(header);
-    selPopupEl.appendChild(body);
+    selPopupEl.appendChild(original);
+    selPopupEl.appendChild(divider);
+    selPopupEl.appendChild(bodyWrap);
     selShadow.appendChild(selPopupEl);
 
-    // Position: try below selection area, or above if not enough space
     positionPopup();
     doSelectionTranslate();
 }
@@ -664,8 +772,8 @@ function positionPopup() {
         anchorX = rect.left;
         anchorY = rect.bottom + 6;
         // If popup would go below viewport, position above
-        if (anchorY + 260 > window.innerHeight) {
-            anchorY = rect.top - 260 - 6;
+        if (anchorY + 340 > window.innerHeight) {
+            anchorY = rect.top - 340 - 6;
             if (anchorY < 0) anchorY = 8;
         }
     }
@@ -681,11 +789,15 @@ function positionPopup() {
 
 async function doSelectionTranslate() {
     if (!selPopupEl) return;
-    const body = selPopupEl.querySelector('.sel-body');
+    const body = selPopupEl.querySelector('.sel-body-text');
     if (!body) return;
 
-    body.className = 'sel-body loading';
+    body.className = 'sel-body-text loading';
     body.textContent = t.selectionTranslating;
+
+    // Remove existing translation TTS button
+    const existingTts = selPopupEl.querySelector('.sel-body-wrap .sel-tts-btn');
+    if (existingTts) existingTts.remove();
 
     try {
         const response = await browser.runtime.sendMessage({
@@ -695,20 +807,33 @@ async function doSelectionTranslate() {
         });
         if (!selPopupEl) return; // dismissed while waiting
         if (response && response.success && response.results && response.results.length > 0) {
-            body.className = 'sel-body';
-            body.textContent = response.results[0].translated;
+            const translated = response.results[0].translated;
+            body.className = 'sel-body-text';
+            body.textContent = translated;
+
+            // Add TTS button for translation
+            const ttsBtn = document.createElement('button');
+            ttsBtn.className = 'sel-tts-btn';
+            ttsBtn.innerHTML = TTS_ICON;
+            ttsBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                speakText(translated, selLang);
+            });
+            const bodyWrap = selPopupEl.querySelector('.sel-body-wrap');
+            if (bodyWrap) bodyWrap.appendChild(ttsBtn);
         } else {
-            body.className = 'sel-body error';
+            body.className = 'sel-body-text error';
             body.textContent = t.selectionError;
         }
     } catch {
         if (!selPopupEl) return;
-        body.className = 'sel-body error';
+        body.className = 'sel-body-text error';
         body.textContent = t.selectionError;
     }
 }
 
 function dismissSelection() {
+    stopSpeech();
     if (selTriggerEl) {
         selTriggerEl.remove();
         selTriggerEl = null;

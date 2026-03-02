@@ -79,6 +79,32 @@ async function translateBatch(items, targetLang) {
 
 // Message handler
 browser.runtime.onMessage.addListener((message, _sender) => {
+    if (message.action === ACTION.TTS) {
+        return (async () => {
+            try {
+                const { text, lang } = message;
+                const langMap = { 'ZH-HANT': 'zh-TW', 'ZH-HANS': 'zh-CN' };
+                const tl = langMap[(lang || '').toUpperCase()] || lang.toLowerCase();
+                const q = text.slice(0, 200);
+                const url = 'https://translate.googleapis.com/translate_tts?'
+                    + `ie=UTF-8&client=gtx&tl=${encodeURIComponent(tl)}`
+                    + `&q=${encodeURIComponent(q)}&textlen=${q.length}`;
+                const res = await fetch(url);
+                if (!res.ok) throw new Error(`TTS ${res.status}`);
+                const buffer = await res.arrayBuffer();
+                const bytes = new Uint8Array(buffer);
+                const chunks = [];
+                for (let i = 0; i < bytes.length; i += 8192) {
+                    chunks.push(String.fromCharCode.apply(null, bytes.subarray(i, i + 8192)));
+                }
+                return { success: true, dataUrl: `data:audio/mpeg;base64,${btoa(chunks.join(''))}` };
+            } catch (err) {
+                console.error('[譯] TTS error:', err);
+                return { success: false, error: err.message };
+            }
+        })();
+    }
+
     if (message.action !== ACTION.TRANSLATE) return;
 
     return (async () => {
