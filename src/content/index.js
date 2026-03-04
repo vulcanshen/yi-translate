@@ -239,6 +239,8 @@ function shouldSkip(el) {
     if (el.closest(SKIP_SELECTOR)) return true;
     if (el.closest(`.${TRANSLATION_CLASS}`)) return true;
     if (el.textContent.trim().length < MIN_TEXT_LENGTH) return true;
+    // Skip parent if it contains nested translatable children (avoid duplicate translations)
+    if (el.querySelector(TRANSLATABLE_SELECTOR)) return true;
     return false;
 }
 
