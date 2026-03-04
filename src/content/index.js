@@ -313,7 +313,11 @@ async function flushPending() {
                         const span = document.createElement('span');
                         span.className = `${TRANSLATION_CLASS} yi-loading`;
                         span.setAttribute('data-yi-for', id);
-                        span.innerHTML = '<span class="yi-badge">譯</span> ⋯';
+                        const badge = document.createElement('span');
+                        badge.className = 'yi-badge';
+                        badge.textContent = '譯';
+                        span.appendChild(badge);
+                        span.appendChild(document.createTextNode(' ⋯'));
                         el.appendChild(span);
                     }
                     return { id, text };
@@ -463,7 +467,17 @@ createFab();
 
 // ─── TTS (Text-to-Speech) ────────────────────────────────────────────
 
-const TTS_ICON = '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" fill="currentColor"/></svg>';
+function createTtsIcon() {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('width', '16');
+    svg.setAttribute('height', '16');
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', 'M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z');
+    path.setAttribute('fill', 'currentColor');
+    svg.appendChild(path);
+    return svg;
+}
 
 let currentAudio = null;
 
@@ -732,7 +746,7 @@ function showPopup() {
     const pageLang = document.documentElement.lang || 'en';
     const originalTts = document.createElement('button');
     originalTts.className = 'sel-tts-btn';
-    originalTts.innerHTML = TTS_ICON;
+    originalTts.appendChild(createTtsIcon());
     originalTts.addEventListener('click', (e) => {
         e.stopPropagation();
         speakText(selText, pageLang);
@@ -816,7 +830,7 @@ async function doSelectionTranslate() {
             // Add TTS button for translation
             const ttsBtn = document.createElement('button');
             ttsBtn.className = 'sel-tts-btn';
-            ttsBtn.innerHTML = TTS_ICON;
+            ttsBtn.appendChild(createTtsIcon());
             ttsBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 speakText(translated, selLang);

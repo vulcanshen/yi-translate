@@ -9,7 +9,7 @@ browser.runtime.onInstalled.addListener(() => {
 });
 
 // Chrome: 點擊 action icon 直接開啟 side panel
-if (typeof chrome !== 'undefined' && chrome.sidePanel) {
+if (import.meta.env.MODE === 'chrome' && typeof chrome !== 'undefined' && chrome.sidePanel) {
     chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
 }
 

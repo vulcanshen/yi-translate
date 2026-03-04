@@ -57,4 +57,4 @@ src/
 
 ## 授權
 
-[MIT](LICENSE)
+[GPL 3.0](LICENSE)
