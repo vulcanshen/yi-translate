@@ -1,0 +1,162 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #333;
+    background: #f5f5f5;
+}
+
+/* ─── Header ─────────────────────────────────────────────── */
+#header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    gap: 12px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.header-icon { width: 24px; height: 24px; }
+
+.header-left h1 {
+    font-size: 0.95em;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.header-right select {
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.85em;
+    background: #fff;
+}
+
+#page-info {
+    font-size: 0.8em;
+    color: #888;
+    white-space: nowrap;
+}
+
+/* ─── Content ────────────────────────────────────────────── */
+#content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 24px 20px;
+}
+
+.pdf-page {
+    background: #fff;
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.page-header {
+    font-size: 0.75em;
+    font-weight: 600;
+    color: #999;
+    margin-bottom: 16px;
+    letter-spacing: 0.5px;
+}
+
+.pdf-para {
+    margin-bottom: 14px;
+    line-height: 1.75;
+    font-size: 0.93em;
+}
+
+.pdf-trans {
+    display: block;
+    border-left: 3px solid #0066cc;
+    padding-left: 8px;
+    margin-top: 5px;
+    font-size: 0.95em;
+    line-height: 1.6;
+    color: #0066cc;
+}
+
+.pdf-trans.yi-loading {
+    animation: yi-fade 1.5s ease-in-out infinite;
+}
+
+.yi-badge {
+    display: inline-block;
+    font-size: 0.75em;
+    font-weight: 700;
+    background: #0066cc;
+    color: #fff;
+    border-radius: 3px;
+    padding: 0 4px;
+    margin-right: 4px;
+    vertical-align: middle;
+}
+
+@keyframes yi-fade {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.8; }
+}
+
+/* ─── States ─────────────────────────────────────────────── */
+.state-msg {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    text-align: center;
+    color: #666;
+    gap: 14px;
+}
+
+.state-msg p {
+    font-size: 0.95em;
+    line-height: 1.5;
+    max-width: 400px;
+}
+
+.spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid #e0e0e0;
+    border-top-color: #0066cc;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.btn-primary {
+    padding: 8px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9em;
+    cursor: pointer;
+    background: #0066cc;
+    color: #fff;
+}
+
+.btn-primary:hover { background: #0052a3; }

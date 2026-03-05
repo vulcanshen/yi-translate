@@ -14,8 +14,9 @@ export default defineConfig(({ mode }) => {
             emptyOutDir: true,
             rollupOptions: {
                 input: {
-                    background: resolve(__dirname, 'src/background/index.js'),
-                    options:    resolve(__dirname, 'src/options/index.html'),
+                    background:   resolve(__dirname, 'src/background/index.js'),
+                    options:      resolve(__dirname, 'src/options/index.html'),
+                    'pdf-viewer': resolve(__dirname, 'src/pdf-viewer/index.html'),
                 },
                 output: {
                     entryFileNames: '[name]/index.js',
@@ -43,6 +44,15 @@ export default defineConfig(({ mode }) => {
                         );
                     }
                     console.log(`✓ Copied icons → ${iconsDir}/`);
+
+                    // Copy pdf.js worker
+                    const pdfDir = `${outDir}/pdf-viewer`;
+                    mkdirSync(pdfDir, { recursive: true });
+                    copyFileSync(
+                        resolve(__dirname, 'node_modules/pdfjs-dist/build/pdf.worker.min.mjs'),
+                        `${pdfDir}/pdf.worker.min.mjs`,
+                    );
+                    console.log(`✓ Copied pdf.worker → ${pdfDir}/`);
                 },
             },
             // content script 獨立打包成 IIFE

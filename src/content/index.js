@@ -16,6 +16,14 @@ import { t } from '../shared/i18n.js';
 
 console.log('[譯] Content script loaded on:', location.hostname);
 
+// PDF 頁面不需要 content script（翻譯由 background 工具列 icon 觸發）
+const isPdf = document.contentType === 'application/pdf'
+    || location.pathname.toLowerCase().endsWith('.pdf');
+if (isPdf) {
+    console.log('[譯] PDF detected, skipping content script');
+    // 不建立 FAB、不建立 observer，一切交由工具列 icon
+}
+
 // Module state
 let enabled = false;
 let observer = null;
@@ -445,6 +453,9 @@ function disable() {
     setWorking(false);
     updateFabAppearance();
 }
+
+// PDF 頁面完全跳過（翻譯由工具列 icon 觸發，開新分頁）
+if (!isPdf) {
 
 // Listen for messages from popup (via tabs.sendMessage)
 browser.runtime.onMessage.addListener((message) => {
@@ -919,3 +930,5 @@ function loadSelectionSettings() {
 createSelHost();
 initSelectionTranslate();
 loadSelectionSettings();
+
+} // end if (!isPdf)

@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2026-03-05
+
+- 新增 PDF 翻譯功能：在 PDF 頁面右鍵選擇「譯 PDF ➜」，開新分頁顯示逐頁雙語對照翻譯
+- 使用 pdf.js 擷取 PDF 文字，支援 IntersectionObserver 懶載入翻譯
+- 新增右鍵選單（contextMenus）作為 PDF 翻譯入口
+- 新增 optional_host_permissions 按需請求權限，不增加預設權限範圍
+- PDF 頁面跳過 content script 注入（FAB、劃詞翻譯等），避免干擾原生 PDF 檢視器
+- 新增 5 語系 PDF 相關翻譯字串
+
 ## [1.1.3] - 2025-06-07
 
 - Switch license from MIT to GPL-3.0-only

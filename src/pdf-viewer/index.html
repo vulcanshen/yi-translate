@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div id="header">
+        <div class="header-left">
+            <img src="../icons/icon32.png" alt="" class="header-icon">
+            <h1 id="doc-title">譯 PDF</h1>
+        </div>
+        <div class="header-right">
+            <select id="target-lang"></select>
+            <span id="page-info"></span>
+        </div>
+    </div>
+
+    <div id="loading-state" class="state-msg">
+        <div class="spinner"></div>
+        <p id="loading-text"></p>
+    </div>
+
+    <div id="error-state" class="state-msg" style="display:none;">
+        <p id="error-text"></p>
+    </div>
+
+    <div id="permission-state" class="state-msg" style="display:none;">
+        <p id="permission-text"></p>
+        <button id="permission-btn" class="btn-primary"></button>
+    </div>
+
+    <div id="content"></div>
+
+    <script type="module" src="./index.js"></script>
+</body>
+</html>

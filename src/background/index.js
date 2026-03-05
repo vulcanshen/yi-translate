@@ -6,6 +6,19 @@ console.log('[譯] Background started');
 
 browser.runtime.onInstalled.addListener(() => {
     console.log('[譯] Extension installed');
+
+    // 右鍵選單：在 PDF 頁面提供翻譯入口
+    browser.contextMenus.create({
+        id: 'yi-pdf-translate',
+        title: '譯 PDF ➜',
+        documentUrlPatterns: [
+            '*://*/*.pdf',
+            '*://*/*.pdf?*',
+            '*://*/*.PDF',
+            '*://*/*.PDF?*',
+        ],
+        contexts: ['page', 'frame'],
+    });
 });
 
 // Chrome: 點擊 action icon 直接開啟 side panel
@@ -20,6 +33,16 @@ browser.action.onClicked.addListener(async () => {
     } else {
         browser.runtime.openOptionsPage();
     }
+});
+
+browser.contextMenus.onClicked.addListener(async (info, tab) => {
+    if (info.menuItemId !== 'yi-pdf-translate') return;
+    const pdfUrl = tab?.url || info.pageUrl;
+    if (!pdfUrl) return;
+    const viewerUrl = browser.runtime.getURL(
+        `pdf-viewer/index.html?url=${encodeURIComponent(pdfUrl)}`,
+    );
+    await browser.tabs.create({ url: viewerUrl });
 });
 
 /**
@@ -88,7 +111,26 @@ async function translateBatch(items, targetLang) {
 }
 
 // Message handler
-browser.runtime.onMessage.addListener((message, _sender) => {
+browser.runtime.onMessage.addListener((message, sender) => {
+    if (message.action === ACTION.PDF_FETCH) {
+        return (async () => {
+            try {
+                const res = await fetch(message.url);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const buffer = await res.arrayBuffer();
+                const bytes = new Uint8Array(buffer);
+                const chunks = [];
+                for (let i = 0; i < bytes.length; i += 8192) {
+                    chunks.push(String.fromCharCode.apply(null, bytes.subarray(i, i + 8192)));
+                }
+                return { success: true, data: btoa(chunks.join('')) };
+            } catch (err) {
+                console.error('[譯] PDF_FETCH error:', err);
+                return { success: false, error: err.message };
+            }
+        })();
+    }
+
     if (message.action === ACTION.TTS) {
         return (async () => {
             try {

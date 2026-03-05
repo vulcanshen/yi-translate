@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "譯",
-  "version": "1.1.7",
+  "version": "1.2.0",
   "description": "開源雙語對照翻譯。快速閱讀，無伺服器，無追蹤。",
 
   "icons": {
@@ -14,7 +14,8 @@
   "permissions": [
     "storage",
     "activeTab",
-    "sidePanel"
+    "sidePanel",
+    "contextMenus"
   ],
 
   "side_panel": {
@@ -23,6 +24,10 @@
 
   "host_permissions": [
     "https://translate.googleapis.com/*"
+  ],
+
+  "optional_host_permissions": [
+    "<all_urls>"
   ],
 
   "background": {
