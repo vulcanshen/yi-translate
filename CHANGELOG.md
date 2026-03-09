@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.1] - 2026-03-09
+
+- 修正劃詞翻譯觸發按鈕位置：多行選取時，按鈕改為出現在選取範圍結尾處，而非整個選取區域的最右下角
+- 更新 GitHub Pages 首頁與 README 說明
+
 ## [1.2.0] - 2026-03-05
 
 - 新增 PDF 翻譯功能：在 PDF 頁面右鍵選擇「譯 PDF ➜」，開新分頁顯示逐頁雙語對照翻譯

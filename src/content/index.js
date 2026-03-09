@@ -885,8 +885,9 @@ function initSelectionTranslate() {
             if (text.length < 2) return;
 
             const range = sel.getRangeAt(0);
-            const rect = range.getBoundingClientRect();
-            // Position trigger at bottom-right of selection
+            const rects = range.getClientRects();
+            // Use last rect (end of selection) instead of full bounding box
+            const rect = rects.length > 0 ? rects[rects.length - 1] : range.getBoundingClientRect();
             const x = Math.min(rect.right + 4, window.innerWidth - 36);
             const y = rect.bottom + 4;
             showTrigger(x, y);
