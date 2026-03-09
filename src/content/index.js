@@ -480,19 +480,37 @@ createFab();
 
 function createTtsIcon() {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('viewBox', '0 0 24 24');
-    svg.setAttribute('width', '16');
-    svg.setAttribute('height', '16');
+    svg.setAttribute('viewBox', '0 0 640 512');
+    svg.setAttribute('width', '14');
+    svg.setAttribute('height', '14');
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', 'M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z');
+    path.setAttribute('d', 'M533.6 32.5C598.5 85.2 640 165.8 640 256s-41.5 170.7-106.4 223.5c-10.3 8.4-25.4 6.8-33.8-3.5s-6.8-25.4 3.5-33.8C557.5 398.2 592 331.2 592 256s-34.5-142.2-88.7-186.3c-10.3-8.4-11.8-23.5-3.5-33.8s23.5-11.8 33.8-3.5zM473.1 107c43.2 35.2 70.9 88.9 70.9 149s-27.7 113.8-70.9 149c-10.3 8.4-25.4 6.8-33.8-3.5s-6.8-25.4 3.5-33.8C475.3 341.3 496 301.1 496 256s-20.7-85.3-53.2-111.8c-10.3-8.4-11.8-23.5-3.5-33.8s23.5-11.8 33.8-3.5zm-60.5 74.5C434.1 199.1 448 225.9 448 256s-13.9 56.9-35.4 74.5c-10.3 8.4-25.4 6.8-33.8-3.5s-6.8-25.4 3.5-33.8C393.1 284.4 400 271 400 256s-6.9-28.4-17.7-37.3c-10.3-8.4-11.8-23.5-3.5-33.8s23.5-11.8 33.8-3.5zM301.1 34.8C312.6 40 320 51.4 320 64l0 384c0 12.6-7.4 24-18.9 29.2s-25 3.1-34.4-5.3L131.8 352 64 352c-35.3 0-64-28.7-64-64l0-64c0-35.3 28.7-64 64-64l67.8 0L266.7 40.1c9.4-8.4 22.9-10.4 34.4-5.3z');
+    path.setAttribute('fill', 'currentColor');
+    svg.appendChild(path);
+    return svg;
+}
+
+function createStopIcon() {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 384 512');
+    svg.setAttribute('width', '14');
+    svg.setAttribute('height', '14');
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', 'M0 128C0 92.7 28.7 64 64 64H320c35.3 0 64 28.7 64 64V384c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V128z');
     path.setAttribute('fill', 'currentColor');
     svg.appendChild(path);
     return svg;
 }
 
 let currentAudio = null;
+let activeTtsBtn = null;
 
-async function speakText(text, langCode) {
+function setTtsBtnPlaying(btn, playing) {
+    if (!btn) return;
+    btn.replaceChildren(playing ? createStopIcon() : createTtsIcon());
+}
+
+async function speakText(text, langCode, btn) {
     stopSpeech();
     try {
         const response = await browser.runtime.sendMessage({
@@ -502,6 +520,13 @@ async function speakText(text, langCode) {
         });
         if (response && response.success) {
             currentAudio = new Audio(response.dataUrl);
+            activeTtsBtn = btn || null;
+            setTtsBtnPlaying(activeTtsBtn, true);
+            currentAudio.addEventListener('ended', () => {
+                setTtsBtnPlaying(activeTtsBtn, false);
+                activeTtsBtn = null;
+                currentAudio = null;
+            });
             currentAudio.play().catch(() => {});
         }
     } catch {
@@ -514,6 +539,10 @@ function stopSpeech() {
         currentAudio.pause();
         currentAudio.currentTime = 0;
         currentAudio = null;
+    }
+    if (activeTtsBtn) {
+        setTtsBtnPlaying(activeTtsBtn, false);
+        activeTtsBtn = null;
     }
 }
 
@@ -539,13 +568,13 @@ function createSelHost() {
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         .sel-trigger {
             position: fixed;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            border-radius: 2px 50% 50% 50%;
             border: 2px solid #0066cc;
             background: #fff;
             color: #0066cc;
-            font-size: 14px;
+            font-size: 11px;
             font-weight: 700;
             cursor: pointer;
             box-shadow: 0 2px 8px rgba(0,0,0,0.25);
@@ -563,14 +592,15 @@ function createSelHost() {
             max-height: 340px;
             background: #fff;
             border: 1px solid #ddd;
-            border-radius: 10px;
+            border-radius: 10px 10px 2px 10px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.15);
             pointer-events: auto;
             z-index: 2147483646;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             font-size: 14px;
             color: #333;
-            overflow: hidden;
+            overflow: auto;
+            resize: both;
             display: flex;
             flex-direction: column;
         }
@@ -641,7 +671,26 @@ function createSelHost() {
             white-space: pre-wrap;
             word-break: break-word;
         }
-        .sel-body-text.loading { color: #999; }
+        .sel-body-text.loading {
+            color: #0066cc;
+            animation: sel-fade 1.5s ease-in-out infinite;
+        }
+        .sel-body-text .sel-badge {
+            display: inline-block;
+            font-size: 0.75em;
+            font-weight: 700;
+            background: #0066cc;
+            color: #fff;
+            border-radius: 3px;
+            padding: 0 4px;
+            margin-right: 4px;
+            vertical-align: middle;
+            line-height: 1.6;
+        }
+        @keyframes sel-fade {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
         .sel-body-text.error { color: #c62828; }
         .sel-tts-btn {
             width: 24px;
@@ -675,7 +724,7 @@ function createSelHost() {
             .sel-close:hover { background: #3a3a3a; color: #e0e0e0; }
             .sel-original-text { color: #999; }
             .sel-divider { background: #444; }
-            .sel-body-text.loading { color: #888; }
+            .sel-body-text.loading { color: #4da6ff; }
             .sel-body-text.error { color: #ef5350; }
             .sel-tts-btn { color: #888; }
             .sel-tts-btn:hover { color: #4da6ff; background: #3a3a3a; }
@@ -683,6 +732,15 @@ function createSelHost() {
     `;
     selShadow.appendChild(style);
     document.documentElement.appendChild(selHost);
+}
+
+function setSelLoading(el) {
+    el.textContent = '';
+    const badge = document.createElement('span');
+    badge.className = 'sel-badge';
+    badge.textContent = '譯';
+    el.appendChild(badge);
+    el.appendChild(document.createTextNode(' ⋯'));
 }
 
 function showTrigger(x, y) {
@@ -760,7 +818,8 @@ function showPopup() {
     originalTts.appendChild(createTtsIcon());
     originalTts.addEventListener('click', (e) => {
         e.stopPropagation();
-        speakText(selText, pageLang);
+        if (activeTtsBtn === originalTts) { stopSpeech(); return; }
+        speakText(selText, pageLang, originalTts);
     });
 
     original.appendChild(originalText);
@@ -776,7 +835,7 @@ function showPopup() {
 
     const bodyText = document.createElement('div');
     bodyText.className = 'sel-body-text loading';
-    bodyText.textContent = t.selectionTranslating;
+    setSelLoading(bodyText);
 
     bodyWrap.appendChild(bodyText);
 
@@ -820,7 +879,7 @@ async function doSelectionTranslate() {
     if (!body) return;
 
     body.className = 'sel-body-text loading';
-    body.textContent = t.selectionTranslating;
+    setSelLoading(body);
 
     // Remove existing translation TTS button
     const existingTts = selPopupEl.querySelector('.sel-body-wrap .sel-tts-btn');
@@ -844,7 +903,8 @@ async function doSelectionTranslate() {
             ttsBtn.appendChild(createTtsIcon());
             ttsBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                speakText(translated, selLang);
+                if (activeTtsBtn === ttsBtn) { stopSpeech(); return; }
+                speakText(translated, selLang, ttsBtn);
             });
             const bodyWrap = selPopupEl.querySelector('.sel-body-wrap');
             if (bodyWrap) bodyWrap.appendChild(ttsBtn);
@@ -888,8 +948,8 @@ function initSelectionTranslate() {
             const rects = range.getClientRects();
             // Use last rect (end of selection) instead of full bounding box
             const rect = rects.length > 0 ? rects[rects.length - 1] : range.getBoundingClientRect();
-            const x = Math.min(rect.right + 4, window.innerWidth - 36);
-            const y = rect.bottom + 4;
+            const x = Math.min(rect.right + 2, window.innerWidth - 26);
+            const y = rect.bottom + 2;
             showTrigger(x, y);
         }, 10);
     });
