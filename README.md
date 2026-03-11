@@ -26,10 +26,10 @@
 
 ## 安裝
 
-| 平台                    | 連結                                                                                                   |
-|-----------------------|------------------------------------------------------------------------------------------------------|
-| Chrome / Edge / Brave | [Chrome Web Store](https://chromewebstore.google.com/) <!-- 審核中，通過後更新連結 -->                          |
-| Firefox               | [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/%E8%AD%AF-yi/) <!-- 審核中，通過後更新連結 --> |
+| 平台                    | 連結                                                                                                      |
+|-----------------------|---------------------------------------------------------------------------------------------------------|
+| Chrome / Edge / Brave | [Chrome Web Store](https://chromewebstore.google.com/detail/%E8%AD%AF/jbnkpfhaobilpghmalbgfaomopgcifbi) |
+| Firefox               | [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/%E8%AD%AF-yi/)                         |
 
 ## 從原始碼建置
 
