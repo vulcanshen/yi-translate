@@ -763,7 +763,8 @@ function showTrigger(x, y) {
             const range = sel.getRangeAt(0);
             const rects = range.getClientRects();
             const r = rects.length > 0 ? rects[rects.length - 1] : range.getBoundingClientRect();
-            selRect = { left: r.left, right: r.right, top: r.top, bottom: r.bottom };
+            const fr = range.getBoundingClientRect();
+            selRect = { left: fr.left, right: r.right, top: r.top, bottom: r.bottom, fullTop: fr.top };
         }
     });
 
@@ -862,11 +863,21 @@ function positionPopup() {
     let anchorX = 0, anchorY = 0;
     if (selRect) {
         anchorX = selRect.left;
-        anchorY = selRect.bottom + 6;
-        // If popup would go below viewport, position above
-        if (anchorY + 340 > window.innerHeight) {
-            anchorY = selRect.top - 340 - 6;
-            if (anchorY < 0) anchorY = 8;
+        const popupHeight = selPopupEl.offsetHeight || 200;
+        const selTop = selRect.fullTop != null ? selRect.fullTop : selRect.top;
+        const spaceBelow = window.innerHeight - selRect.bottom - 6;
+        const spaceAbove = selTop - 6;
+        if (spaceBelow >= popupHeight) {
+            // Enough room below selection
+            anchorY = selRect.bottom + 6;
+        } else if (spaceAbove >= popupHeight) {
+            // Show above entire selection (use first line's top)
+            anchorY = selTop - popupHeight - 6;
+        } else {
+            // Neither fits perfectly — pick the side with more space
+            anchorY = spaceBelow >= spaceAbove
+                ? selRect.bottom + 6
+                : Math.max(8, selTop - popupHeight - 6);
         }
     }
     // Clamp horizontal
@@ -914,6 +925,7 @@ async function doSelectionTranslate() {
             });
             const bodyWrap = selPopupEl.querySelector('.sel-body-wrap');
             if (bodyWrap) bodyWrap.appendChild(ttsBtn);
+            positionPopup();
         } else {
             body.className = 'sel-body-text error';
             body.textContent = t.selectionError;
@@ -955,7 +967,8 @@ function initSelectionTranslate() {
             const rects = range.getClientRects();
             // Use last rect (end of selection) instead of full bounding box
             const rect = rects.length > 0 ? rects[rects.length - 1] : range.getBoundingClientRect();
-            selRect = { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom };
+            const fullRect = range.getBoundingClientRect();
+            selRect = { left: fullRect.left, right: rect.right, top: rect.top, bottom: rect.bottom, fullTop: fullRect.top };
             if (selAutoPopup) {
                 selText = text;
                 showPopup();
