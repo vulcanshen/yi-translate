@@ -49,6 +49,7 @@ export const DEFAULTS = {
   translationBgColor: '#f0f7ff',
   showTranslationBg: false,
   selectionTranslate: true,
+  selectionAutoPopup: false,
   selectionTargetLang: detectDefaultTargetLang(),
 };
 

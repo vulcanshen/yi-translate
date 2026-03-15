@@ -555,7 +555,9 @@ let selPopupEl = null;
 let selText = '';
 let selLang = '';
 let selEnabled = true;
+let selAutoPopup = false;
 let selDefaultLang = '';
+let selRect = null;
 
 function createSelHost() {
     selHost = document.createElement('div');
@@ -757,6 +759,12 @@ function showTrigger(x, y) {
         e.stopPropagation();
         const sel = window.getSelection();
         selText = sel ? sel.toString().trim() : '';
+        if (sel && sel.rangeCount > 0) {
+            const range = sel.getRangeAt(0);
+            const rects = range.getClientRects();
+            const r = rects.length > 0 ? rects[rects.length - 1] : range.getBoundingClientRect();
+            selRect = { left: r.left, right: r.right, top: r.top, bottom: r.bottom };
+        }
     });
 
     selTriggerEl.addEventListener('click', (e) => {
@@ -851,15 +859,13 @@ function showPopup() {
 
 function positionPopup() {
     if (!selPopupEl) return;
-    const sel = window.getSelection();
     let anchorX = 0, anchorY = 0;
-    if (sel && sel.rangeCount > 0) {
-        const rect = sel.getRangeAt(0).getBoundingClientRect();
-        anchorX = rect.left;
-        anchorY = rect.bottom + 6;
+    if (selRect) {
+        anchorX = selRect.left;
+        anchorY = selRect.bottom + 6;
         // If popup would go below viewport, position above
         if (anchorY + 340 > window.innerHeight) {
-            anchorY = rect.top - 340 - 6;
+            anchorY = selRect.top - 340 - 6;
             if (anchorY < 0) anchorY = 8;
         }
     }
@@ -930,6 +936,7 @@ function dismissSelection() {
         selPopupEl = null;
     }
     selText = '';
+    selRect = null;
 }
 
 function initSelectionTranslate() {
@@ -948,9 +955,15 @@ function initSelectionTranslate() {
             const rects = range.getClientRects();
             // Use last rect (end of selection) instead of full bounding box
             const rect = rects.length > 0 ? rects[rects.length - 1] : range.getBoundingClientRect();
-            const x = Math.min(rect.right + 2, window.innerWidth - 26);
-            const y = rect.bottom + 2;
-            showTrigger(x, y);
+            selRect = { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom };
+            if (selAutoPopup) {
+                selText = text;
+                showPopup();
+            } else {
+                const x = Math.min(rect.right + 2, window.innerWidth - 26);
+                const y = rect.bottom + 2;
+                showTrigger(x, y);
+            }
         }, 10);
     });
 
@@ -973,6 +986,7 @@ function initSelectionTranslate() {
 function loadSelectionSettings() {
     getSettings().then((settings) => {
         selEnabled = settings.selectionTranslate !== false;
+        selAutoPopup = !!settings.selectionAutoPopup;
         selDefaultLang = settings.selectionTargetLang || settings.targetLang;
         selLang = selDefaultLang;
     });
@@ -982,6 +996,7 @@ function loadSelectionSettings() {
         if (changes.settings) {
             const s = { ...changes.settings.newValue };
             selEnabled = s.selectionTranslate !== false;
+            selAutoPopup = !!s.selectionAutoPopup;
             selDefaultLang = s.selectionTargetLang || s.targetLang;
             selLang = selDefaultLang;
         }

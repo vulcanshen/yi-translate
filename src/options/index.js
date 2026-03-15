@@ -11,6 +11,8 @@ for (const el of document.querySelectorAll('[data-i18n]')) {
 
 const targetLangEl = document.getElementById('target-lang');
 const selEnabledEl = document.getElementById('selection-enabled');
+const selAutoPopupEl = document.getElementById('selection-auto-popup');
+const selAutoRow = document.getElementById('selection-auto-row');
 const selLangEl = document.getElementById('selection-target-lang');
 const selLangRow = document.getElementById('selection-lang-row');
 const textColorEl = document.getElementById('text-color');
@@ -37,7 +39,9 @@ for (const lang of TARGET_LANGUAGES) {
 }
 
 selEnabledEl.addEventListener('change', () => {
-    selLangRow.style.display = selEnabledEl.checked ? '' : 'none';
+    const show = selEnabledEl.checked;
+    selAutoRow.style.display = show ? '' : 'none';
+    selLangRow.style.display = show ? '' : 'none';
 });
 
 function updatePreview() {
@@ -83,7 +87,9 @@ getSettings().then((settings) => {
     bgColorEl.value = settings.translationBgColor || DEFAULTS.translationBgColor;
     bgColorHex.textContent = bgColorEl.value;
     selEnabledEl.checked = settings.selectionTranslate !== false;
+    selAutoPopupEl.checked = !!settings.selectionAutoPopup;
     selLangEl.value = settings.selectionTargetLang || DEFAULTS.selectionTargetLang;
+    selAutoRow.style.display = selEnabledEl.checked ? '' : 'none';
     selLangRow.style.display = selEnabledEl.checked ? '' : 'none';
     updatePreview();
 });
@@ -96,6 +102,7 @@ saveBtn.addEventListener('click', async () => {
     settings.showTranslationBg = bgEnabledEl.checked;
     settings.translationBgColor = bgColorEl.value;
     settings.selectionTranslate = selEnabledEl.checked;
+    settings.selectionAutoPopup = selAutoPopupEl.checked;
     settings.selectionTargetLang = selLangEl.value;
     await saveSettings(settings);
     showStatus(t.saved, true);
