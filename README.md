@@ -31,20 +31,22 @@
 | Chrome / Edge / Brave | [Chrome Web Store](https://chromewebstore.google.com/detail/%E8%AD%AF/jbnkpfhaobilpghmalbgfaomopgcifbi) |
 | Firefox               | [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/%E8%AD%AF-yi/)                         |
 
-## 從原始碼建置
+## 手動安裝（從 GitHub Release）
 
-```bash
-git clone https://github.com/vulcanshen/yi-translate.git
-cd yi-translate
-npm install
+前往 [Releases](https://github.com/vulcanshen/yi-translate/releases) 下載最新版本的 zip 檔案。
 
-npm run build:chrome    # 打包 Chrome
-npm run build:firefox   # 打包 Firefox
-npm run build:all       # 同時打包兩個平台
-npm run dev:chrome      # watch mode
-```
+### Chrome / Edge / Brave
 
-產出在 `dist/chrome` 或 `dist/firefox`，可用開發者模式載入測試。
+1. 下載 `yi-chrome-v*.zip`，解壓縮到任意資料夾
+2. 開啟 `chrome://extensions`（Edge 為 `edge://extensions`）
+3. 開啟右上角「開發人員模式」
+4. 點擊「載入未封裝項目」，選擇解壓縮後的資料夾
+
+### Firefox
+
+1. 下載 `yi-firefox-v*.zip`（不需解壓縮）
+2. 開啟 `about:addons` → 齒輪圖示 → 「從檔案安裝附加元件…」
+3. 選擇下載的 `.zip` 檔案
 
 ## 專案結構
 
