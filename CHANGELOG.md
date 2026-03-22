@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.0] - 2026-03-22
+
+- 切換目標語言後自動重新翻譯目前頁面，無需手動重整
+- FAB 浮動按鈕改為白底加彩色外框樣式，啟用時藍色、停用時灰色
+- 新增 `refreshTranslation()` 功能：清除既有翻譯並重新觀察頁面元素
+- 安裝說明更新為從 GitHub Release 下載
+
 ## [1.3.1] - 2026-03-15
 
 - 修正劃詞翻譯區塊垂直定位：畫面下方多行選取時，翻譯區塊改為顯示在整個選取範圍上方，不再遮擋文字

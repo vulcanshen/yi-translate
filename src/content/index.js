@@ -92,10 +92,12 @@ function setWorking(_active) {
 function updateFabAppearance() {
     if (!fabBtn) return;
     if (enabled) {
-        fabBtn.style.background = '#0066cc';
+        fabBtn.style.borderColor = '#0066cc';
+        fabBtn.style.color = '#0066cc';
         fabBtn.title = t.disableTip;
     } else {
-        fabBtn.style.background = '#888';
+        fabBtn.style.borderColor = '#888';
+        fabBtn.style.color = '#888';
         fabBtn.title = t.enableTip;
     }
 }
@@ -117,7 +119,7 @@ function createFab() {
             right: 20px;
             display: flex;
             flex-direction: column;
-            align-items: flex-end;
+            align-items: center;
             gap: 4px;
             user-select: none;
             -webkit-user-select: none;
@@ -131,22 +133,22 @@ function createFab() {
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            border: none;
-            background: #888;
-            color: #fff;
+            border: 2px solid #888;
+            background: #fff;
+            color: #888;
             cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background 0.2s, box-shadow 0.2s;
+            transition: border-color 0.2s, color 0.2s, box-shadow 0.2s;
             touch-action: none;
             padding: 0;
             font-size: 16px;
             font-weight: 700;
         }
         .fab-btn:hover {
-            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.25);
         }
     `;
 
@@ -211,7 +213,6 @@ function createFab() {
         dragging = false;
         fabBtn.releasePointerCapture(e.pointerId);
         if (moved) {
-            // Save position
             try {
                 localStorage.setItem('yi-fab-pos', JSON.stringify({
                     bottom: parseInt(wrap.style.bottom),
@@ -219,7 +220,6 @@ function createFab() {
                 }));
             } catch { /* ignore */ }
         } else {
-            // Click — toggle
             if (enabled) {
                 disable();
             } else {
@@ -454,6 +454,22 @@ function disable() {
     updateFabAppearance();
 }
 
+function refreshTranslation() {
+    if (debounceTimer) { clearTimeout(debounceTimer); debounceTimer = null; }
+    pending.clear();
+    busy = false;
+    if (observer) { observer.disconnect(); observer = null; }
+
+    // Remove all translation spans
+    for (const span of document.querySelectorAll(`.${TRANSLATION_CLASS}`)) span.remove();
+    // Remove translated markers so elements can be re-translated
+    for (const el of document.querySelectorAll(`[${TRANSLATED_ATTR}]`)) el.removeAttribute(TRANSLATED_ATTR);
+
+    translatedCount = 0;
+    createObserver();
+    observeAll();
+}
+
 // PDF 頁面完全跳過（翻譯由工具列 icon 觸發，開新分頁）
 if (!isPdf) {
 
@@ -470,6 +486,15 @@ browser.runtime.onMessage.addListener((message) => {
             enable();
         }
         return Promise.resolve({ enabled, count: translatedCount });
+    }
+
+});
+
+browser.storage.onChanged.addListener((changes) => {
+    if (changes.settings && enabled) {
+        const oldLang = changes.settings.oldValue?.targetLang;
+        const newLang = changes.settings.newValue?.targetLang;
+        if (oldLang !== newLang) refreshTranslation();
     }
 });
 

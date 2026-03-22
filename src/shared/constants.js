@@ -5,6 +5,7 @@ export const ACTION = {
   TOGGLE: 'yi:toggle',
   GET_STATE: 'yi:get-state',
   PDF_FETCH: 'yi:pdf-fetch',
+  LANG_CHANGED: 'yi:lang-changed',
 };
 
 // IntersectionObserver margin — start translating elements before they enter viewport
