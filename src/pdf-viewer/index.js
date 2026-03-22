@@ -22,7 +22,7 @@ const langSelect = document.getElementById('target-lang');
 
 let pdfUrl = '';
 let targetLang = '';
-let translationColor = '#0066cc';
+let translationColor = '#C4A35A';
 let translationBgColor = '';
 let showBg = false;
 
@@ -42,7 +42,7 @@ langSelect.addEventListener('change', () => {
 async function init() {
     const settings = await getSettings();
     targetLang = settings.targetLang;
-    translationColor = settings.translationTextColor || '#0066cc';
+    translationColor = settings.translationTextColor || '#C4A35A';
     showBg = !!settings.showTranslationBg;
     translationBgColor = settings.translationBgColor || '';
     langSelect.value = targetLang;

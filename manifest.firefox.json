@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "譯 Yi",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "開源雙語對照翻譯。快速閱讀，無伺服器，無追蹤。",
 
   "icons": {
@@ -42,7 +42,6 @@
     "default_panel": "options/index.html",
     "default_title": "譯 Yi",
     "default_icon": {
-      "16": "icons/icon16.png",
       "32": "icons/icon32.png"
     }
   },

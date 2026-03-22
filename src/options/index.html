@@ -89,10 +89,10 @@
         }
         .bg-color-row { margin-left: 24px; }
         .preview-box {
-            border-left: 3px solid #0066cc;
+            border-left: 3px solid #C4A35A;
             padding-left: 8px;
             margin-top: 12px;
-            color: #0066cc;
+            color: #C4A35A;
             font-size: 0.95em;
             line-height: 1.6;
         }
@@ -130,6 +130,16 @@
     <label for="target-lang" data-i18n="targetLangLabel">Target language</label>
     <p class="hint" data-i18n="targetLangHint">Uses Google Translate (free). No API key required.</p>
     <select id="target-lang"></select>
+
+    <div style="margin-top: 12px;">
+        <label for="font-size" data-i18n="fontSize">Translation font size</label>
+        <select id="font-size"></select>
+    </div>
+
+    <div class="checkbox-row" style="margin-top: 12px;">
+        <input type="checkbox" id="hidden-mode">
+        <label for="hidden-mode" data-i18n="hiddenMode">Hidden mode (click to reveal translation)</label>
+    </div>
 </fieldset>
 
 <fieldset>
@@ -154,8 +164,8 @@
 
     <label data-i18n="textColor">Text color</label>
     <div class="color-row">
-        <input type="color" id="text-color" value="#0066cc">
-        <span class="color-hex" id="text-color-hex">#0066cc</span>
+        <input type="color" id="text-color" value="#C4A35A">
+        <span class="color-hex" id="text-color-hex">#C4A35A</span>
     </div>
 
     <div class="checkbox-row">

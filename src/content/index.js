@@ -32,16 +32,21 @@ let translatedCount = 0;
 let debounceTimer = null;
 let busy = false;
 let nextId = 0;
+let hiddenMode = false;
+let revealedIds = new Set();
 
 const HIDDEN_CLASS = 'yi-hidden';
 const SKIP_SELECTOR = Array.from(SKIP_TAGS).join(',');
 const ID_ATTR = 'data-yi-id';
 
+// Zen Maru Gothic subset (譯 only, ~1KB woff2)
+const YI_FONT_FACE = `@font-face { font-family: 'Yi'; src: url(data:font/woff2;base64,d09GMgABAAAAAAPIABAAAAAAB6wAAANwAAEAgwAAAAAAAAAAAAAAAAAAAAAAAAAAGYFSGyAcIAZgADQRCAqELINvATYCJAMGCwYABCAFg2wHIBckGAYbUgZAnge2bWMLnqhG5Sx2/WgyT8TD/6/R7pv5K+ZNQzQPzeX0jaJAq5REVGsk0mbmYq3tvXtSw5KJnogmhhAZUiQ0EqWxvH/vp1ByzyuIDd4gYvSIb47yVCVoDMp8907v2gPwngdYpIGF7WtMGtvWwD1AAskDnZN+Flga6LLNtrvACCJkmLq5QY9PbyVQbs+rgNK5heNr6O67mgDzxxrJw/wJKrHQPUclFLoXqCHBvBDIJL2aur6gFOSSavUKPiCKfYjcEVK0QNIqcLpPYa3X+MOEaWiyKFVTPAQVpjF8YAFsl4WVulUhVf4tIkFxCwAZh1P+gK8HSshe8ocAq5wtthRCHZRf7rnW5k8bsP4quz1bIKdoAemJTwNAQPziPwT6+ZEBD81iDggD+kEqEbzKvr2FTEEfBODwBpDx50mowifgDwCUXbVfz+OJ8nSroJhY5sslPj5sG+KrHSYyyWOBsT0l9rEwuL/hAbH2e3B1FxGqXg0SDlBrfCM7Cuwb4eNXC3FtF3t8tft3qP18F652zvzal6f5arewbQOuJhejisbHibWPDi0NrRrfV8bR3Tg/hfrD3uVD4vFVfBiwPMIrcLXKqH2dr3YNsd+XibOu5/gT6Qc+d/uOH/FO9jX65356/YLObx6iF05FKwY2tgb2+g4GtjYGDoW7f/Se8AOdO0PsH6UdqNglvnvoA+JD+ub2OrzhdRdTf6h88su8VQQ9a4HnJ0bSIdU3i7rmPSbGM+a6i2/yXBO/quhXtTL3kegjdzlRrl4bv/nan2VcgHM8YH2MPrJ704mAw/eB6VLHyQRpo9m92AT0Be8n9LR7NdT7FPBadeoauS0DAAiEW6GU57notN3/chL4BPg6ZJ4CwG8Vd29bb8uv8lOgVAaC9HTzkfwvGDeNEwQ1x0yfGoIgiyfQ7lEgD+R5KLNmlyUx4DU4Uej1gzK13qLclH+UjIcGKtEZXsRKDUeKLTKFS8OiMQx1c2Z6PEt87YNk7BFJkodOoDSmuj0yA4OFq9tgEizHoW7uz+UxKCxeNG0ajc2ZZ8JMwclE/70yGU1AosgkBt00r6J0QuylZZzBejyXSPhMQhzPwjyzo2VLHu041bDUdFIvAyYztLX3RvnwNqHRsUdPvX6narr9VGlRDgWFUQ/I83/uu1J155agCxBRgRzHAAA=) format('woff2'); }`;
+
 // Floating button references
 let fabHost = null;
 let fabBtn = null;
 
-function injectStyles(textColor, bgColor) {
+function injectStyles(textColor, bgColor, fontSize) {
     let style = document.getElementById('yi-styles');
     if (!style) {
         style = document.createElement('style');
@@ -52,27 +57,32 @@ function injectStyles(textColor, bgColor) {
         ? `background-color: ${bgColor}; border-radius: 4px; padding: 4px 4px 4px 8px;`
         : '';
     style.textContent = `
+        ${YI_FONT_FACE}
         .${TRANSLATION_CLASS} {
             display: block;
             border-left: 3px solid ${textColor};
             padding-left: 8px;
             margin-top: 4px;
             color: ${textColor};
-            font-size: 0.95em;
+            font-size: ${fontSize || 16}px;
             line-height: 1.6;
             ${bgRule}
         }
         .yi-badge {
-            display: inline-block;
-            font-size: 0.75em;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            font-family: 'Yi', sans-serif;
+            font-size: 11px;
             font-weight: 700;
-            background: ${textColor};
+            background: #0066cc;
             color: #fff;
-            border-radius: 3px;
-            padding: 0 4px;
+            border: 1.5px solid #C4A35A;
+            border-radius: 50%;
             margin-right: 4px;
             vertical-align: middle;
-            line-height: 1.6;
         }
         .${TRANSLATION_CLASS}.yi-loading {
             animation: yi-fade 1.5s ease-in-out infinite;
@@ -82,6 +92,29 @@ function injectStyles(textColor, bgColor) {
             50% { opacity: 0.8; }
         }
         .${HIDDEN_CLASS} { display: none !important; }
+        .yi-reveal-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            font-family: 'Yi', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            background: #0066cc;
+            color: #fff;
+            border: 1.5px solid #C4A35A;
+            border-radius: 50% 50% 50% 2px;
+            padding: 0;
+            margin-left: 3px;
+            vertical-align: top;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.15s, transform 0.1s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .yi-reveal-btn:hover { opacity: 1; transform: scale(1.1); }
+        .${TRANSLATION_CLASS}.yi-collapsed { display: none; }
     `;
 }
 
@@ -92,11 +125,13 @@ function setWorking(_active) {
 function updateFabAppearance() {
     if (!fabBtn) return;
     if (enabled) {
-        fabBtn.style.borderColor = '#0066cc';
-        fabBtn.style.color = '#0066cc';
+        fabBtn.style.borderColor = '#C4A35A';
+        fabBtn.style.background = '#0066cc';
+        fabBtn.style.color = '#fff';
         fabBtn.title = t.disableTip;
     } else {
         fabBtn.style.borderColor = '#888';
+        fabBtn.style.background = '#e8e8e8';
         fabBtn.style.color = '#888';
         fabBtn.title = t.enableTip;
     }
@@ -105,24 +140,44 @@ function updateFabAppearance() {
 function createFab() {
     if (fabHost) return;
 
+    // Inject @font-face at document level (shadow DOM may not load it)
+    if (!document.getElementById('yi-font-face')) {
+        const fontStyle = document.createElement('style');
+        fontStyle.id = 'yi-font-face';
+        fontStyle.textContent = YI_FONT_FACE;
+        document.head.appendChild(fontStyle);
+    }
+
     fabHost = document.createElement('div');
     fabHost.id = 'yi-fab-host';
-    fabHost.style.cssText = 'position:fixed;z-index:2147483647;top:0;left:0;width:0;height:0;';
+    fabHost.style.cssText = 'position:fixed;z-index:2147483647;top:0;left:0;right:0;bottom:0;pointer-events:none;';
 
     const shadow = fabHost.attachShadow({ mode: 'closed' });
 
     const style = document.createElement('style');
     style.textContent = `
+        ${YI_FONT_FACE}
         .fab-wrap {
-            position: fixed;
+            position: absolute;
             bottom: 80px;
             right: 20px;
+            width: 36px;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 4px;
             user-select: none;
             -webkit-user-select: none;
+            pointer-events: auto;
+        }
+        .fab-wrap.snapping {
+            animation: snap-move 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+        @keyframes snap-fade {
+            0%   { opacity: 1; }
+            25%  { opacity: 0.3; }
+            75%  { opacity: 0.3; }
+            100% { opacity: 1; }
         }
         .fab-container {
             position: relative;
@@ -134,7 +189,7 @@ function createFab() {
             height: 36px;
             border-radius: 50%;
             border: 2px solid #888;
-            background: #fff;
+            background: #e8e8e8;
             color: #888;
             cursor: pointer;
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
@@ -144,6 +199,7 @@ function createFab() {
             transition: border-color 0.2s, color 0.2s, box-shadow 0.2s;
             touch-action: none;
             padding: 0;
+            font-family: 'Yi', sans-serif;
             font-size: 16px;
             font-weight: 700;
         }
@@ -172,9 +228,14 @@ function createFab() {
     try {
         const saved = localStorage.getItem('yi-fab-pos');
         if (saved) {
-            const { bottom, right } = JSON.parse(saved);
-            wrap.style.bottom = bottom + 'px';
-            wrap.style.right = right + 'px';
+            const pos = JSON.parse(saved);
+            wrap.style.bottom = pos.bottom + 'px';
+            if (pos.side === 'left') {
+                wrap.style.right = 'auto';
+                wrap.style.left = pos.left + 'px';
+            } else {
+                wrap.style.right = pos.right + 'px';
+            }
         }
     } catch { /* ignore */ }
 
@@ -191,8 +252,12 @@ function createFab() {
         startX = e.clientX;
         startY = e.clientY;
         const rect = wrap.getBoundingClientRect();
-        startRight = window.innerWidth - rect.right;
-        startBottom = window.innerHeight - rect.bottom;
+        const hostRect = fabHost.getBoundingClientRect();
+        // Always switch to right-based positioning during drag
+        wrap.style.left = 'auto';
+        startRight = hostRect.right - rect.right;
+        wrap.style.right = startRight + 'px';
+        startBottom = hostRect.bottom - rect.bottom;
         fabBtn.setPointerCapture(e.pointerId);
     });
 
@@ -201,6 +266,10 @@ function createFab() {
         const dx = e.clientX - startX;
         const dy = e.clientY - startY;
         if (!moved && Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return;
+        if (!moved) {
+            wrap.style.transition = 'none';
+            wrap.classList.remove('snapping');
+        }
         moved = true;
         const newRight = Math.max(0, startRight - dx);
         const newBottom = Math.max(0, startBottom - dy);
@@ -208,17 +277,74 @@ function createFab() {
         wrap.style.bottom = newBottom + 'px';
     });
 
+    fabBtn.addEventListener('pointercancel', (e) => {
+        if (!dragging) return;
+        dragging = false;
+    });
+
     fabBtn.addEventListener('pointerup', (e) => {
         if (!dragging) return;
         dragging = false;
         fabBtn.releasePointerCapture(e.pointerId);
         if (moved) {
-            try {
-                localStorage.setItem('yi-fab-pos', JSON.stringify({
-                    bottom: parseInt(wrap.style.bottom),
-                    right: parseInt(wrap.style.right),
-                }));
-            } catch { /* ignore */ }
+            // Snap to left or right edge based on button center vs window center
+            const FAB_MARGIN = 20;
+            const rect = wrap.getBoundingClientRect();
+            const hostRect = fabHost.getBoundingClientRect();
+            const btnCenterX = rect.left + rect.width / 2;
+            const snapToLeft = btnCenterX < hostRect.width / 2;
+
+            if (snapToLeft) {
+                // Animate right → then switch to left positioning
+                const snapRight = hostRect.width - rect.width - FAB_MARGIN;
+                const currentRight = parseFloat(wrap.style.right);
+                const distance = Math.abs(snapRight - currentRight);
+                const duration = Math.min(0.5, Math.max(0.25, distance / 800));
+                wrap.style.transition = `right ${duration}s cubic-bezier(0.25, 1, 0.5, 1)`;
+                wrap.style.animation = `snap-fade ${duration}s ease`;
+                wrap.style.right = snapRight + 'px';
+
+                const onEnd = () => {
+                    wrap.style.transition = '';
+                    wrap.style.animation = '';
+                    // Switch to left-based positioning
+                    wrap.style.right = 'auto';
+                    wrap.style.left = FAB_MARGIN + 'px';
+                    wrap.removeEventListener('transitionend', onEnd);
+                };
+                wrap.addEventListener('transitionend', onEnd);
+
+                try {
+                    localStorage.setItem('yi-fab-pos', JSON.stringify({
+                        bottom: parseInt(wrap.style.bottom),
+                        left: FAB_MARGIN,
+                        side: 'left',
+                    }));
+                } catch { /* ignore */ }
+            } else {
+                const snapRight = FAB_MARGIN;
+                const currentRight = parseFloat(wrap.style.right);
+                const distance = Math.abs(snapRight - currentRight);
+                const duration = Math.min(0.5, Math.max(0.25, distance / 800));
+                wrap.style.transition = `right ${duration}s cubic-bezier(0.25, 1, 0.5, 1)`;
+                wrap.style.animation = `snap-fade ${duration}s ease`;
+                wrap.style.right = snapRight + 'px';
+
+                const onEnd = () => {
+                    wrap.style.transition = '';
+                    wrap.style.animation = '';
+                    wrap.removeEventListener('transitionend', onEnd);
+                };
+                wrap.addEventListener('transitionend', onEnd);
+
+                try {
+                    localStorage.setItem('yi-fab-pos', JSON.stringify({
+                        bottom: parseInt(wrap.style.bottom),
+                        right: snapRight,
+                        side: 'right',
+                    }));
+                } catch { /* ignore */ }
+            }
         } else {
             if (enabled) {
                 disable();
@@ -363,6 +489,19 @@ async function flushPending() {
                     span.textContent = result.translated;
                     span.classList.remove('yi-loading');
                     translatedCount++;
+
+                    if (hiddenMode && !revealedIds.has(result.id)) {
+                        span.classList.add('yi-collapsed');
+                        const revealBtn = document.createElement('button');
+                        revealBtn.className = 'yi-reveal-btn';
+                        revealBtn.textContent = '譯';
+                        revealBtn.setAttribute('data-yi-reveal', result.id);
+                        revealBtn.addEventListener('click', () => {
+                            span.classList.remove('yi-collapsed');
+                            revealBtn.remove();
+                        });
+                        span.parentElement.appendChild(revealBtn);
+                    }
                 }
             }
         }
@@ -416,13 +555,17 @@ async function enable() {
     busy = false;
 
     const settings = await getSettings();
+    hiddenMode = !!settings.hiddenMode;
     const bgColor = settings.showTranslationBg ? settings.translationBgColor : '';
-    injectStyles(settings.translationTextColor, bgColor);
+    injectStyles(settings.translationTextColor, bgColor, settings.translationFontSize);
 
     const hidden = document.querySelectorAll(`.${TRANSLATION_CLASS}.${HIDDEN_CLASS}`);
     for (const el of hidden) {
         el.classList.remove(HIDDEN_CLASS);
     }
+
+    // Sync hidden mode state for existing translations
+    applyHiddenMode();
 
     createObserver();
     observeAll();
@@ -449,9 +592,42 @@ function disable() {
     for (const span of spans) {
         span.classList.add(HIDDEN_CLASS);
     }
+    for (const btn of document.querySelectorAll('.yi-reveal-btn')) btn.remove();
 
     setWorking(false);
     updateFabAppearance();
+}
+
+function applyHiddenMode() {
+    if (hiddenMode) {
+        // For all completed translation spans, ensure they are collapsed with a reveal button
+        for (const span of document.querySelectorAll(`.${TRANSLATION_CLASS}:not(.yi-loading):not(.${HIDDEN_CLASS})`)) {
+            const id = span.getAttribute('data-yi-for');
+            if (!id) continue;
+            // Skip if reveal button already exists
+            if (document.querySelector(`.yi-reveal-btn[data-yi-reveal="${id}"]`)) continue;
+            // Skip already-revealed (user clicked to show)
+            if (!span.classList.contains('yi-collapsed') && span.textContent.trim()) {
+                // Visible span without button — collapse it
+            }
+            span.classList.add('yi-collapsed');
+            const revealBtn = document.createElement('button');
+            revealBtn.className = 'yi-reveal-btn';
+            revealBtn.textContent = '譯';
+            revealBtn.setAttribute('data-yi-reveal', id);
+            revealBtn.addEventListener('click', () => {
+                span.classList.remove('yi-collapsed');
+                revealBtn.remove();
+            });
+            span.parentElement.appendChild(revealBtn);
+        }
+    } else {
+        // Disable hidden mode: show all collapsed spans, remove all reveal buttons
+        for (const span of document.querySelectorAll(`.${TRANSLATION_CLASS}.yi-collapsed`)) {
+            span.classList.remove('yi-collapsed');
+        }
+        for (const btn of document.querySelectorAll('.yi-reveal-btn')) btn.remove();
+    }
 }
 
 function refreshTranslation() {
@@ -460,8 +636,16 @@ function refreshTranslation() {
     busy = false;
     if (observer) { observer.disconnect(); observer = null; }
 
-    // Remove all translation spans
+    // Remember which IDs were revealed (visible, not collapsed) before refresh
+    revealedIds.clear();
+    for (const span of document.querySelectorAll(`.${TRANSLATION_CLASS}:not(.yi-collapsed):not(.yi-loading):not(.${HIDDEN_CLASS})`)) {
+        const id = span.getAttribute('data-yi-for');
+        if (id) revealedIds.add(id);
+    }
+
+    // Remove all translation spans and reveal buttons
     for (const span of document.querySelectorAll(`.${TRANSLATION_CLASS}`)) span.remove();
+    for (const btn of document.querySelectorAll('.yi-reveal-btn')) btn.remove();
     // Remove translated markers so elements can be re-translated
     for (const el of document.querySelectorAll(`[${TRANSLATED_ATTR}]`)) el.removeAttribute(TRANSLATED_ATTR);
 
@@ -491,10 +675,32 @@ browser.runtime.onMessage.addListener((message) => {
 });
 
 browser.storage.onChanged.addListener((changes) => {
-    if (changes.settings && enabled) {
-        const oldLang = changes.settings.oldValue?.targetLang;
-        const newLang = changes.settings.newValue?.targetLang;
-        if (oldLang !== newLang) refreshTranslation();
+    if (!changes.settings || !enabled) return;
+    const oldVal = changes.settings.oldValue || {};
+    const newVal = changes.settings.newValue || {};
+
+    const langChanged = oldVal.targetLang !== newVal.targetLang;
+    const hiddenChanged = !!oldVal.hiddenMode !== !!newVal.hiddenMode;
+    const styleChanged =
+        oldVal.translationTextColor !== newVal.translationTextColor ||
+        !!oldVal.showTranslationBg !== !!newVal.showTranslationBg ||
+        oldVal.translationBgColor !== newVal.translationBgColor ||
+        oldVal.translationFontSize !== newVal.translationFontSize;
+
+    if (langChanged) {
+        hiddenMode = !!newVal.hiddenMode;
+        refreshTranslation();
+        return;
+    }
+
+    if (styleChanged) {
+        const bgColor = newVal.showTranslationBg ? newVal.translationBgColor : '';
+        injectStyles(newVal.translationTextColor, bgColor, newVal.translationFontSize);
+    }
+
+    if (hiddenChanged) {
+        hiddenMode = !!newVal.hiddenMode;
+        applyHiddenMode();
     }
 });
 
@@ -592,15 +798,17 @@ function createSelHost() {
 
     const style = document.createElement('style');
     style.textContent = `
+        ${YI_FONT_FACE}
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         .sel-trigger {
             position: fixed;
             width: 22px;
             height: 22px;
             border-radius: 2px 50% 50% 50%;
-            border: 2px solid #0066cc;
-            background: #fff;
-            color: #0066cc;
+            border: 2px solid #C4A35A;
+            background: #0066cc;
+            color: #fff;
+            font-family: 'Yi', sans-serif;
             font-size: 11px;
             font-weight: 700;
             cursor: pointer;
@@ -627,6 +835,7 @@ function createSelHost() {
             font-size: 14px;
             color: #333;
             overflow: auto;
+            overscroll-behavior: contain;
             resize: both;
             display: flex;
             flex-direction: column;

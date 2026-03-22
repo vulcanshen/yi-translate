@@ -10,11 +10,13 @@ for (const el of document.querySelectorAll('[data-i18n]')) {
 }
 
 const targetLangEl = document.getElementById('target-lang');
+const hiddenModeEl = document.getElementById('hidden-mode');
 const selEnabledEl = document.getElementById('selection-enabled');
 const selAutoPopupEl = document.getElementById('selection-auto-popup');
 const selAutoRow = document.getElementById('selection-auto-row');
 const selLangEl = document.getElementById('selection-target-lang');
 const selLangRow = document.getElementById('selection-lang-row');
+const fontSizeEl = document.getElementById('font-size');
 const textColorEl = document.getElementById('text-color');
 const textColorHex = document.getElementById('text-color-hex');
 const bgEnabledEl = document.getElementById('bg-enabled');
@@ -38,6 +40,14 @@ for (const lang of TARGET_LANGUAGES) {
     selLangEl.appendChild(option2);
 }
 
+// Populate font size options
+for (const size of [12, 14, 15, 16, 18, 20]) {
+    const option = document.createElement('option');
+    option.value = String(size);
+    option.textContent = `${size}px`;
+    fontSizeEl.appendChild(option);
+}
+
 selEnabledEl.addEventListener('change', () => {
     const show = selEnabledEl.checked;
     selAutoRow.style.display = show ? '' : 'none';
@@ -59,6 +69,7 @@ function updatePreview() {
         previewEl.style.paddingLeft = '8px';
     }
     bgColorRow.style.display = bgEnabledEl.checked ? 'flex' : 'none';
+    previewEl.style.fontSize = fontSizeEl.value + 'px';
 }
 
 function showStatus(text, ok) {
@@ -77,6 +88,7 @@ bgColorEl.addEventListener('input', () => {
     updatePreview();
 });
 bgEnabledEl.addEventListener('change', updatePreview);
+fontSizeEl.addEventListener('change', updatePreview);
 
 // Load settings
 getSettings().then((settings) => {
@@ -86,6 +98,8 @@ getSettings().then((settings) => {
     bgEnabledEl.checked = !!settings.showTranslationBg;
     bgColorEl.value = settings.translationBgColor || DEFAULTS.translationBgColor;
     bgColorHex.textContent = bgColorEl.value;
+    fontSizeEl.value = settings.translationFontSize || DEFAULTS.translationFontSize;
+    hiddenModeEl.checked = !!settings.hiddenMode;
     selEnabledEl.checked = settings.selectionTranslate !== false;
     selAutoPopupEl.checked = !!settings.selectionAutoPopup;
     selLangEl.value = settings.selectionTargetLang || DEFAULTS.selectionTargetLang;
@@ -101,6 +115,8 @@ saveBtn.addEventListener('click', async () => {
     settings.translationTextColor = textColorEl.value;
     settings.showTranslationBg = bgEnabledEl.checked;
     settings.translationBgColor = bgColorEl.value;
+    settings.translationFontSize = fontSizeEl.value;
+    settings.hiddenMode = hiddenModeEl.checked;
     settings.selectionTranslate = selEnabledEl.checked;
     settings.selectionAutoPopup = selAutoPopupEl.checked;
     settings.selectionTargetLang = selLangEl.value;

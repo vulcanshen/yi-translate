@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.1] - 2026-03-22
+
+- 修正 hidden mode 在翻譯關閉期間切換設定後，重新啟用翻譯時內容不顯示的問題
+- 更換 icon 字體為 Zen Maru Gothic（圓角風格），所有按鈕文字統一嵌入字體
+- 修正劃詞翻譯框滾動穿透問題，滾動不再影響外部頁面
+- 修正 FAB 浮動按鈕靠左時縮小視窗會被推出畫面的問題，改用 left/right 雙向定位
+- 新增 icon 尺寸：64、256、512px PNG
+
 ## [1.4.0] - 2026-03-22
 
 - 切換目標語言後自動重新翻譯目前頁面，無需手動重整

@@ -46,10 +46,12 @@ import { detectDefaultTargetLang } from './i18n.js';
 // Default settings
 export const DEFAULTS = {
   targetLang: detectDefaultTargetLang(),
-  translationTextColor: '#0066cc',
-  translationBgColor: '#f0f7ff',
+  translationTextColor: '#C4A35A',
+  translationBgColor: '#f5f0e5',
   showTranslationBg: false,
   selectionTranslate: true,
+  translationFontSize: '14',
+  hiddenMode: false,
   selectionAutoPopup: false,
   selectionTargetLang: detectDefaultTargetLang(),
 };
