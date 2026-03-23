@@ -23,7 +23,7 @@
 
 ## 支援翻譯語言
 
-繁體中文、簡體中文、English、日本語、한국어、Deutsch、Français、Español
+支援 Google Translate 全部語言（100+），包含繁體中文、簡體中文、English、日本語、한국어、Deutsch、Français、Español 等。
 
 ## 安裝
 

@@ -9,7 +9,8 @@ import {
     MIN_TEXT_LENGTH,
     OBSERVER_MARGIN,
     TRANSLATE_DEBOUNCE,
-    TARGET_LANGUAGES,
+    SUGGESTED_LANGUAGES,
+    ALL_LANGUAGES,
 } from '../shared/constants.js';
 import { getSettings } from '../shared/storage.js';
 import { t } from '../shared/i18n.js';
@@ -1037,12 +1038,24 @@ function showPopup() {
     header.className = 'sel-header';
 
     const langSelect = document.createElement('select');
-    for (const lang of TARGET_LANGUAGES) {
+    const popGroup = document.createElement('optgroup');
+    popGroup.label = '★';
+    for (const lang of SUGGESTED_LANGUAGES) {
         const opt = document.createElement('option');
         opt.value = lang.value;
         opt.textContent = lang.label;
-        langSelect.appendChild(opt);
+        popGroup.appendChild(opt);
     }
+    langSelect.appendChild(popGroup);
+    const allGroup = document.createElement('optgroup');
+    allGroup.label = '⋯';
+    for (const lang of ALL_LANGUAGES) {
+        const opt = document.createElement('option');
+        opt.value = lang.value;
+        opt.textContent = lang.label;
+        allGroup.appendChild(opt);
+    }
+    langSelect.appendChild(allGroup);
     langSelect.value = selLang;
     langSelect.addEventListener('change', () => {
         selLang = langSelect.value;

@@ -37,6 +37,8 @@ const messages = {
         pdfFileAccess: '請到擴充功能設定中開啟「允許存取檔案網址」',
         resetFab: '重設浮動按鈕位置',
         resetFabDone: '已恢復',
+        langSuggested: '建議語言',
+        langMore: '更多語言',
     },
     'zh-CN': {
         optionsTitle: '译 - 设置',
@@ -76,6 +78,8 @@ const messages = {
         pdfFileAccess: '请到扩展程序设置中开启「允许访问文件网址」',
         resetFab: '重置浮动按钮位置',
         resetFabDone: '已恢复',
+        langSuggested: '建议语言',
+        langMore: '更多语言',
     },
     en: {
         optionsTitle: '譯 - Settings',
@@ -115,6 +119,8 @@ const messages = {
         pdfFileAccess: 'Please enable "Allow access to file URLs" in extension settings',
         resetFab: 'Reset floating button position',
         resetFabDone: 'Reset done',
+        langSuggested: 'Suggested',
+        langMore: 'More languages',
     },
     ja: {
         optionsTitle: '譯 - 設定',
@@ -154,6 +160,8 @@ const messages = {
         pdfFileAccess: '拡張機能の設定で「ファイルの URL へのアクセスを許可」を有効にしてください',
         resetFab: 'フローティングボタンの位置をリセット',
         resetFabDone: 'リセット完了',
+        langSuggested: 'おすすめ',
+        langMore: 'その他の言語',
     },
     ko: {
         optionsTitle: '譯 - 설정',
@@ -193,6 +201,8 @@ const messages = {
         pdfFileAccess: '확장 프로그램 설정에서 "파일 URL에 대한 접근 허용"을 활성화해 주세요',
         resetFab: '플로팅 버튼 위치 초기화',
         resetFabDone: '초기화 완료',
+        langSuggested: '추천',
+        langMore: '기타 언어',
     },
 };
 
@@ -206,17 +216,39 @@ export function detectLocale() {
     return 'en';
 }
 
+// Map browser language prefix → Google Translate language code (uppercase)
+const BROWSER_LANG_MAP = {
+    zh: null, // handled specially
+    ja: 'JA', ko: 'KO', de: 'DE', fr: 'FR', es: 'ES',
+    af: 'AF', sq: 'SQ', am: 'AM', ar: 'AR', hy: 'HY',
+    az: 'AZ', eu: 'EU', be: 'BE', bn: 'BN', bs: 'BS',
+    bg: 'BG', ca: 'CA', co: 'CO', hr: 'HR', cs: 'CS',
+    da: 'DA', nl: 'NL', en: 'EN', eo: 'EO', et: 'ET',
+    fi: 'FI', fy: 'FY', gl: 'GL', ka: 'KA', el: 'EL',
+    gu: 'GU', ht: 'HT', ha: 'HA', he: 'IW', iw: 'IW',
+    hi: 'HI', hu: 'HU', is: 'IS', ig: 'IG', id: 'ID',
+    ga: 'GA', it: 'IT', jv: 'JW', jw: 'JW', kn: 'KN',
+    kk: 'KK', km: 'KM', ku: 'KU', ky: 'KY', lo: 'LO',
+    la: 'LA', lv: 'LV', lt: 'LT', lb: 'LB', mk: 'MK',
+    mg: 'MG', ms: 'MS', ml: 'ML', mt: 'MT', mi: 'MI',
+    mr: 'MR', mn: 'MN', my: 'MY', ne: 'NE', no: 'NO',
+    nb: 'NO', nn: 'NO', ny: 'NY', ps: 'PS', fa: 'FA',
+    pl: 'PL', pt: 'PT', pa: 'PA', ro: 'RO', ru: 'RU',
+    sm: 'SM', gd: 'GD', sr: 'SR', st: 'ST', sn: 'SN',
+    sd: 'SD', si: 'SI', sk: 'SK', sl: 'SL', so: 'SO',
+    su: 'SU', sw: 'SW', sv: 'SV', tl: 'TL', tg: 'TG',
+    ta: 'TA', te: 'TE', th: 'TH', tr: 'TR', uk: 'UK',
+    ur: 'UR', uz: 'UZ', vi: 'VI', cy: 'CY', xh: 'XH',
+    yi: 'YI', yo: 'YO', zu: 'ZU',
+};
+
 export function detectDefaultTargetLang() {
     const lang = navigator.language || 'en';
     if (lang.startsWith('zh')) {
         return (lang === 'zh-CN' || lang === 'zh-SG') ? 'ZH-HANS' : 'ZH-HANT';
     }
-    if (lang.startsWith('ja')) return 'JA';
-    if (lang.startsWith('ko')) return 'KO';
-    if (lang.startsWith('de')) return 'DE';
-    if (lang.startsWith('fr')) return 'FR';
-    if (lang.startsWith('es')) return 'ES';
-    return 'EN';
+    const prefix = lang.split('-')[0].toLowerCase();
+    return BROWSER_LANG_MAP[prefix] || 'EN';
 }
 
 const locale = detectLocale();

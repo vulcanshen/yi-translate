@@ -1,6 +1,6 @@
 import browser from 'webextension-polyfill';
 import { GlobalWorkerOptions, getDocument } from 'pdfjs-dist';
-import { ACTION, TARGET_LANGUAGES, BATCH_SIZE } from '../shared/constants.js';
+import { ACTION, SUGGESTED_LANGUAGES, ALL_LANGUAGES, BATCH_SIZE } from '../shared/constants.js';
 import { getSettings } from '../shared/storage.js';
 import { t } from '../shared/i18n.js';
 
@@ -27,12 +27,24 @@ let translationBgColor = '';
 let showBg = false;
 
 // ─── Language selector ───────────────────────────────────────────────
-for (const lang of TARGET_LANGUAGES) {
+const popGroup = document.createElement('optgroup');
+popGroup.label = '★';
+for (const lang of SUGGESTED_LANGUAGES) {
     const opt = document.createElement('option');
     opt.value = lang.value;
     opt.textContent = lang.label;
-    langSelect.appendChild(opt);
+    popGroup.appendChild(opt);
 }
+langSelect.appendChild(popGroup);
+const allGroup = document.createElement('optgroup');
+allGroup.label = '⋯';
+for (const lang of ALL_LANGUAGES) {
+    const opt = document.createElement('option');
+    opt.value = lang.value;
+    opt.textContent = lang.label;
+    allGroup.appendChild(opt);
+}
+langSelect.appendChild(allGroup);
 langSelect.addEventListener('change', () => {
     targetLang = langSelect.value;
     retranslateAll();

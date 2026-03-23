@@ -1,5 +1,5 @@
 import { getSettings, saveSettings } from '../shared/storage.js';
-import { TARGET_LANGUAGES, DEFAULTS, ACTION } from '../shared/constants.js';
+import { SUGGESTED_LANGUAGES, ALL_LANGUAGES, DEFAULTS, ACTION } from '../shared/constants.js';
 import { t, detectLocale } from '../shared/i18n.js';
 
 // Apply i18n
@@ -27,18 +27,30 @@ const previewEl = document.getElementById('preview');
 const saveBtn = document.getElementById('save-btn');
 const statusEl = document.getElementById('status');
 
-// Populate target language dropdowns
-for (const lang of TARGET_LANGUAGES) {
-    const option = document.createElement('option');
-    option.value = lang.value;
-    option.textContent = lang.label;
-    targetLangEl.appendChild(option);
+// Populate target language dropdowns with optgroup
+function populateLangSelect(selectEl) {
+    const popularGroup = document.createElement('optgroup');
+    popularGroup.label = t.langSuggested || 'Suggested';
+    for (const lang of SUGGESTED_LANGUAGES) {
+        const option = document.createElement('option');
+        option.value = lang.value;
+        option.textContent = lang.label;
+        popularGroup.appendChild(option);
+    }
+    selectEl.appendChild(popularGroup);
 
-    const option2 = document.createElement('option');
-    option2.value = lang.value;
-    option2.textContent = lang.label;
-    selLangEl.appendChild(option2);
+    const allGroup = document.createElement('optgroup');
+    allGroup.label = t.langMore || 'More languages';
+    for (const lang of ALL_LANGUAGES) {
+        const option = document.createElement('option');
+        option.value = lang.value;
+        option.textContent = lang.label;
+        allGroup.appendChild(option);
+    }
+    selectEl.appendChild(allGroup);
 }
+populateLangSelect(targetLangEl);
+populateLangSelect(selLangEl);
 
 // Populate font size options
 for (const size of [12, 14, 15, 16, 18, 20]) {
