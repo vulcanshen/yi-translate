@@ -35,6 +35,8 @@ const messages = {
         pdfPermission: '需要存取此網站的權限才能讀取 PDF',
         pdfAllow: '允許存取',
         pdfFileAccess: '請到擴充功能設定中開啟「允許存取檔案網址」',
+        resetFab: '重設浮動按鈕位置',
+        resetFabDone: '已恢復',
     },
     'zh-CN': {
         optionsTitle: '译 - 设置',
@@ -72,6 +74,8 @@ const messages = {
         pdfPermission: '需要访问此网站的权限才能读取 PDF',
         pdfAllow: '允许访问',
         pdfFileAccess: '请到扩展程序设置中开启「允许访问文件网址」',
+        resetFab: '重置浮动按钮位置',
+        resetFabDone: '已恢复',
     },
     en: {
         optionsTitle: '譯 - Settings',
@@ -109,6 +113,8 @@ const messages = {
         pdfPermission: 'Permission needed to access this site and read the PDF',
         pdfAllow: 'Allow access',
         pdfFileAccess: 'Please enable "Allow access to file URLs" in extension settings',
+        resetFab: 'Reset floating button position',
+        resetFabDone: 'Reset done',
     },
     ja: {
         optionsTitle: '譯 - 設定',
@@ -146,6 +152,8 @@ const messages = {
         pdfPermission: 'PDF を読み取るには、このサイトへのアクセス権限が必要です',
         pdfAllow: 'アクセスを許可',
         pdfFileAccess: '拡張機能の設定で「ファイルの URL へのアクセスを許可」を有効にしてください',
+        resetFab: 'フローティングボタンの位置をリセット',
+        resetFabDone: 'リセット完了',
     },
     ko: {
         optionsTitle: '譯 - 설정',
@@ -183,6 +191,8 @@ const messages = {
         pdfPermission: 'PDF를 읽으려면 이 사이트에 대한 접근 권한이 필요합니다',
         pdfAllow: '접근 허용',
         pdfFileAccess: '확장 프로그램 설정에서 "파일 URL에 대한 접근 허용"을 활성화해 주세요',
+        resetFab: '플로팅 버튼 위치 초기화',
+        resetFabDone: '초기화 완료',
     },
 };
 

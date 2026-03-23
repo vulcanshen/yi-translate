@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.2] - 2026-03-23
+
+- 修正 FAB 浮動按鈕往上拖曳超過瀏覽器視窗後無法拉回的問題
+- 設定頁面新增「重設浮動按鈕位置」按鈕，一鍵恢復 FAB 預設位置
+
 ## [1.4.1] - 2026-03-22
 
 - 修正 hidden mode 在翻譯關閉期間切換設定後，重新啟用翻譯時內容不顯示的問題

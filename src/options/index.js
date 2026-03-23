@@ -1,5 +1,5 @@
 import { getSettings, saveSettings } from '../shared/storage.js';
-import { TARGET_LANGUAGES, DEFAULTS } from '../shared/constants.js';
+import { TARGET_LANGUAGES, DEFAULTS, ACTION } from '../shared/constants.js';
 import { t, detectLocale } from '../shared/i18n.js';
 
 // Apply i18n
@@ -106,6 +106,12 @@ getSettings().then((settings) => {
     selAutoRow.style.display = selEnabledEl.checked ? '' : 'none';
     selLangRow.style.display = selEnabledEl.checked ? '' : 'none';
     updatePreview();
+});
+
+// Reset FAB position
+document.getElementById('reset-fab-btn').addEventListener('click', async () => {
+    await browser.runtime.sendMessage({ action: ACTION.RESET_FAB });
+    showStatus(t.resetFabDone, true);
 });
 
 // Save

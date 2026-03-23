@@ -44,6 +44,7 @@ const YI_FONT_FACE = `@font-face { font-family: 'Yi'; src: url(data:font/woff2;b
 
 // Floating button references
 let fabHost = null;
+let fabWrap = null;
 let fabBtn = null;
 
 function injectStyles(textColor, bgColor, fontSize) {
@@ -210,6 +211,7 @@ function createFab() {
 
     const wrap = document.createElement('div');
     wrap.className = 'fab-wrap';
+    fabWrap = wrap;
 
     const container = document.createElement('div');
     container.className = 'fab-container';
@@ -272,7 +274,8 @@ function createFab() {
         }
         moved = true;
         const newRight = Math.max(0, startRight - dx);
-        const newBottom = Math.max(0, startBottom - dy);
+        const maxBottom = fabHost.getBoundingClientRect().height - wrap.getBoundingClientRect().height;
+        const newBottom = Math.min(maxBottom, Math.max(0, startBottom - dy));
         wrap.style.right = newRight + 'px';
         wrap.style.bottom = newBottom + 'px';
     });
@@ -661,6 +664,17 @@ if (!isPdf) {
 browser.runtime.onMessage.addListener((message) => {
     if (message.action === ACTION.GET_STATE) {
         return Promise.resolve({ enabled, count: translatedCount });
+    }
+
+    if (message.action === ACTION.RESET_FAB) {
+        if (fabWrap) {
+            fabWrap.style.transition = '';
+            fabWrap.style.left = 'auto';
+            fabWrap.style.right = '20px';
+            fabWrap.style.bottom = '80px';
+        }
+        try { localStorage.removeItem('yi-fab-pos'); } catch { /* ignore */ }
+        return Promise.resolve({ success: true });
     }
 
     if (message.action === ACTION.TOGGLE) {

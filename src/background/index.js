@@ -157,6 +157,18 @@ browser.runtime.onMessage.addListener((message, sender) => {
         })();
     }
 
+    if (message.action === ACTION.RESET_FAB) {
+        return (async () => {
+            const tabs = await browser.tabs.query({});
+            for (const tab of tabs) {
+                try {
+                    await browser.tabs.sendMessage(tab.id, { action: ACTION.RESET_FAB });
+                } catch { /* tab may not have content script */ }
+            }
+            return { success: true };
+        })();
+    }
+
     if (message.action !== ACTION.TRANSLATE) return;
 
     return (async () => {
