@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.0] - 2026-03-26
+
+- 設定介面語系全面動態化：移除硬編碼的 5 語系翻譯，改為透過 Google Translate 即時翻譯並快取至 storage，支援所有 Google Translate 語言
+- 新增「Settings UI language」設定，使用者可自由選擇設定介面顯示語言
+- 語言選擇下拉改為平面列表，移除建議/更多分組
+- 切換未快取語系時顯示 loading 燈箱效果
+- 全文翻譯目標語系變更時自動清除舊翻譯，隱藏模式下保持已展開的段落狀態
+- PDF 翻譯頁面新增即時語系切換監聽，設定頁儲存後自動重新翻譯
+- FAB tooltip 及 content script UI 文字隨設定介面語系即時更新
+- 預設翻譯文字顏色改為藍色（#0066cc），與 icon 風格一致
+- 劃詞翻譯 loading badge 改為圓形樣式，與全文翻譯 loading 風格統一
+- 隱藏模式 reveal 按鈕透明度提升（0.6 → 0.85）
+- manifest description 改為英文，PDF 右鍵選單文字簡化為「PDF ➜」
+
 ## [1.5.0] - 2026-03-23
 
 - 翻譯目標語言擴展為 Google Translate 全部支援語言（100+），不再限於 8 種

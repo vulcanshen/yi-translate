@@ -7,6 +7,7 @@ export const ACTION = {
   PDF_FETCH: 'yi:pdf-fetch',
   LANG_CHANGED: 'yi:lang-changed',
   RESET_FAB: 'yi:reset-fab',
+  TRANSLATE_UI: 'yi:translate-ui',
 };
 
 // IntersectionObserver margin — start translating elements before they enter viewport
@@ -42,12 +43,12 @@ export const TRANSLATION_CLASS = 'yi-translation';
 // Minimum text length to bother translating
 export const MIN_TEXT_LENGTH = 4;
 
-import { detectDefaultTargetLang } from './i18n.js';
+import { detectDefaultTargetLang, detectDefaultUiLang } from './i18n.js';
 
 // Default settings
 export const DEFAULTS = {
   targetLang: detectDefaultTargetLang(),
-  translationTextColor: '#C4A35A',
+  translationTextColor: '#0066cc',
   translationBgColor: '#f5f0e5',
   showTranslationBg: false,
   selectionTranslate: true,
@@ -55,22 +56,11 @@ export const DEFAULTS = {
   hiddenMode: false,
   selectionAutoPopup: false,
   selectionTargetLang: detectDefaultTargetLang(),
+  uiLang: detectDefaultUiLang(),
 };
 
-// Popular target languages (shown at top of dropdown)
-export const SUGGESTED_LANGUAGES = [
-  { value: 'ZH-HANT', label: '繁體中文' },
-  { value: 'ZH-HANS', label: '简体中文' },
-  { value: 'EN', label: 'English' },
-  { value: 'JA', label: '日本語' },
-  { value: 'KO', label: '한국어' },
-  { value: 'DE', label: 'Deutsch' },
-  { value: 'FR', label: 'Français' },
-  { value: 'ES', label: 'Español' },
-];
-
-// All Google Translate supported languages (sorted by label)
-export const ALL_LANGUAGES = [
+// All supported languages (sorted by label)
+export const LANGUAGES = [
   { value: 'AF', label: 'Afrikaans' },
   { value: 'SQ', label: 'Shqip (Albanian)' },
   { value: 'AM', label: 'አማርኛ (Amharic)' },
@@ -84,6 +74,8 @@ export const ALL_LANGUAGES = [
   { value: 'BG', label: 'Български (Bulgarian)' },
   { value: 'CA', label: 'Català (Catalan)' },
   { value: 'CEB', label: 'Cebuano' },
+  { value: 'ZH-HANS', label: '简体中文 (Chinese Simplified)' },
+  { value: 'ZH-HANT', label: '繁體中文 (Chinese Traditional)' },
   { value: 'CO', label: 'Corsu (Corsican)' },
   { value: 'HR', label: 'Hrvatski (Croatian)' },
   { value: 'CS', label: 'Čeština (Czech)' },
@@ -173,6 +165,4 @@ export const ALL_LANGUAGES = [
   { value: 'YI', label: 'ייִדיש (Yiddish)' },
   { value: 'YO', label: 'Yorùbá (Yoruba)' },
   { value: 'ZU', label: 'IsiZulu (Zulu)' },
-  { value: 'ZH-HANT', label: '繁體中文 (Chinese Traditional)' },
-  { value: 'ZH-HANS', label: '简体中文 (Chinese Simplified)' },
 ];

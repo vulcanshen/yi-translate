@@ -9,11 +9,31 @@ import {
     MIN_TEXT_LENGTH,
     OBSERVER_MARGIN,
     TRANSLATE_DEBOUNCE,
-    SUGGESTED_LANGUAGES,
-    ALL_LANGUAGES,
+    LANGUAGES,
 } from '../shared/constants.js';
 import { getSettings } from '../shared/storage.js';
-import { t } from '../shared/i18n.js';
+import { EN_MESSAGES } from '../shared/i18n.js';
+import { loadUiMessages } from '../shared/ui-i18n.js';
+
+// UI messages — start with English, load translated version async
+let t = { ...EN_MESSAGES };
+
+function refreshUiMessages() {
+    loadUiMessages().then((msgs) => {
+        t = msgs;
+        if (fabBtn) {
+            fabBtn.title = enabled ? t.disableTip : t.enableTip;
+        }
+    });
+}
+refreshUiMessages();
+
+// Reload UI messages when settings change (e.g. uiLang changed in options)
+browser.storage.onChanged.addListener((changes) => {
+    if (changes.settings || changes.uiMessages) {
+        refreshUiMessages();
+    }
+});
 
 console.log('[譯] Content script loaded on:', location.hostname);
 
@@ -111,7 +131,7 @@ function injectStyles(textColor, bgColor, fontSize) {
             margin-left: 3px;
             vertical-align: top;
             cursor: pointer;
-            opacity: 0.6;
+            opacity: 0.85;
             transition: opacity 0.15s, transform 0.1s;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
@@ -690,7 +710,7 @@ browser.runtime.onMessage.addListener((message) => {
 });
 
 browser.storage.onChanged.addListener((changes) => {
-    if (!changes.settings || !enabled) return;
+    if (!changes.settings) return;
     const oldVal = changes.settings.oldValue || {};
     const newVal = changes.settings.newValue || {};
 
@@ -703,8 +723,18 @@ browser.storage.onChanged.addListener((changes) => {
         oldVal.translationFontSize !== newVal.translationFontSize;
 
     if (langChanged) {
+        dismissSelection();
         hiddenMode = !!newVal.hiddenMode;
-        refreshTranslation();
+        if (enabled) {
+            // refreshTranslation preserves revealed state in hidden mode
+            refreshTranslation();
+        } else {
+            // Not enabled — just clear everything
+            for (const span of document.querySelectorAll(`.${TRANSLATION_CLASS}`)) span.remove();
+            for (const btn of document.querySelectorAll('.yi-reveal-btn')) btn.remove();
+            for (const el of document.querySelectorAll(`[${TRANSLATED_ATTR}]`)) el.removeAttribute(TRANSLATED_ATTR);
+            translatedCount = 0;
+        }
         return;
     }
 
@@ -927,16 +957,20 @@ function createSelHost() {
             animation: sel-fade 1.5s ease-in-out infinite;
         }
         .sel-body-text .sel-badge {
-            display: inline-block;
-            font-size: 0.75em;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            font-family: 'Yi', sans-serif;
+            font-size: 11px;
             font-weight: 700;
             background: #0066cc;
             color: #fff;
-            border-radius: 3px;
-            padding: 0 4px;
+            border: 1.5px solid #C4A35A;
+            border-radius: 50%;
             margin-right: 4px;
             vertical-align: middle;
-            line-height: 1.6;
         }
         @keyframes sel-fade {
             0%, 100% { opacity: 0.3; }
@@ -1038,24 +1072,12 @@ function showPopup() {
     header.className = 'sel-header';
 
     const langSelect = document.createElement('select');
-    const popGroup = document.createElement('optgroup');
-    popGroup.label = '★';
-    for (const lang of SUGGESTED_LANGUAGES) {
+    for (const lang of LANGUAGES) {
         const opt = document.createElement('option');
         opt.value = lang.value;
         opt.textContent = lang.label;
-        popGroup.appendChild(opt);
+        langSelect.appendChild(opt);
     }
-    langSelect.appendChild(popGroup);
-    const allGroup = document.createElement('optgroup');
-    allGroup.label = '⋯';
-    for (const lang of ALL_LANGUAGES) {
-        const opt = document.createElement('option');
-        opt.value = lang.value;
-        opt.textContent = lang.label;
-        allGroup.appendChild(opt);
-    }
-    langSelect.appendChild(allGroup);
     langSelect.value = selLang;
     langSelect.addEventListener('change', () => {
         selLang = langSelect.value;

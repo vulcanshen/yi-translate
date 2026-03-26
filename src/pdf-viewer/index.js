@@ -1,8 +1,9 @@
 import browser from 'webextension-polyfill';
 import { GlobalWorkerOptions, getDocument } from 'pdfjs-dist';
-import { ACTION, SUGGESTED_LANGUAGES, ALL_LANGUAGES, BATCH_SIZE } from '../shared/constants.js';
+import { ACTION, LANGUAGES, BATCH_SIZE } from '../shared/constants.js';
 import { getSettings } from '../shared/storage.js';
-import { t } from '../shared/i18n.js';
+import { EN_MESSAGES } from '../shared/i18n.js';
+import { loadUiMessages } from '../shared/ui-i18n.js';
 
 // pdf.js worker — copied to same directory by vite plugin
 GlobalWorkerOptions.workerSrc = './pdf.worker.min.mjs';
@@ -26,25 +27,17 @@ let translationColor = '#C4A35A';
 let translationBgColor = '';
 let showBg = false;
 
+// UI messages — start with English, load translated version async
+let t = { ...EN_MESSAGES };
+loadUiMessages().then((msgs) => { t = msgs; });
+
 // ─── Language selector ───────────────────────────────────────────────
-const popGroup = document.createElement('optgroup');
-popGroup.label = '★';
-for (const lang of SUGGESTED_LANGUAGES) {
+for (const lang of LANGUAGES) {
     const opt = document.createElement('option');
     opt.value = lang.value;
     opt.textContent = lang.label;
-    popGroup.appendChild(opt);
+    langSelect.appendChild(opt);
 }
-langSelect.appendChild(popGroup);
-const allGroup = document.createElement('optgroup');
-allGroup.label = '⋯';
-for (const lang of ALL_LANGUAGES) {
-    const opt = document.createElement('option');
-    opt.value = lang.value;
-    opt.textContent = lang.label;
-    allGroup.appendChild(opt);
-}
-langSelect.appendChild(allGroup);
 langSelect.addEventListener('change', () => {
     targetLang = langSelect.value;
     retranslateAll();
@@ -363,6 +356,21 @@ function retranslateAll() {
     translatedPages.clear();
     observePages();
 }
+
+// Listen for settings changes (e.g. targetLang changed in options)
+browser.storage.onChanged.addListener((changes) => {
+    if (!changes.settings) return;
+    const oldVal = changes.settings.oldValue || {};
+    const newVal = changes.settings.newValue || {};
+    if (oldVal.targetLang !== newVal.targetLang) {
+        targetLang = newVal.targetLang;
+        langSelect.value = targetLang;
+        retranslateAll();
+    }
+    if (changes.uiMessages || oldVal.uiLang !== newVal.uiLang) {
+        loadUiMessages().then((msgs) => { t = msgs; });
+    }
+});
 
 // ─── Start ───────────────────────────────────────────────────────────
 init();

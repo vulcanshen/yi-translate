@@ -1,14 +1,10 @@
+import browser from 'webextension-polyfill';
 import { getSettings, saveSettings } from '../shared/storage.js';
-import { SUGGESTED_LANGUAGES, ALL_LANGUAGES, DEFAULTS, ACTION } from '../shared/constants.js';
-import { t, detectLocale } from '../shared/i18n.js';
+import { LANGUAGES, DEFAULTS, ACTION } from '../shared/constants.js';
+import { EN_MESSAGES } from '../shared/i18n.js';
+import { loadUiMessages } from '../shared/ui-i18n.js';
 
-// Apply i18n
-document.documentElement.lang = detectLocale();
-for (const el of document.querySelectorAll('[data-i18n]')) {
-    const key = el.getAttribute('data-i18n');
-    if (t[key]) el.textContent = t[key];
-}
-
+const uiLangEl = document.getElementById('ui-lang');
 const targetLangEl = document.getElementById('target-lang');
 const hiddenModeEl = document.getElementById('hidden-mode');
 const selEnabledEl = document.getElementById('selection-enabled');
@@ -27,28 +23,22 @@ const previewEl = document.getElementById('preview');
 const saveBtn = document.getElementById('save-btn');
 const statusEl = document.getElementById('status');
 
-// Populate target language dropdowns with optgroup
-function populateLangSelect(selectEl) {
-    const popularGroup = document.createElement('optgroup');
-    popularGroup.label = t.langSuggested || 'Suggested';
-    for (const lang of SUGGESTED_LANGUAGES) {
-        const option = document.createElement('option');
-        option.value = lang.value;
-        option.textContent = lang.label;
-        popularGroup.appendChild(option);
-    }
-    selectEl.appendChild(popularGroup);
+const loadingOverlay = document.getElementById('loading-overlay');
 
-    const allGroup = document.createElement('optgroup');
-    allGroup.label = t.langMore || 'More languages';
-    for (const lang of ALL_LANGUAGES) {
+// Current UI messages
+let t = EN_MESSAGES;
+
+// Populate language dropdown (flat list, no optgroups)
+function populateLangSelect(selectEl) {
+    selectEl.innerHTML = '';
+    for (const lang of LANGUAGES) {
         const option = document.createElement('option');
         option.value = lang.value;
         option.textContent = lang.label;
-        allGroup.appendChild(option);
+        selectEl.appendChild(option);
     }
-    selectEl.appendChild(allGroup);
 }
+populateLangSelect(uiLangEl);
 populateLangSelect(targetLangEl);
 populateLangSelect(selLangEl);
 
@@ -90,6 +80,26 @@ function showStatus(text, ok) {
     setTimeout(() => statusEl.classList.remove('show'), 2000);
 }
 
+// Apply i18n messages to all data-i18n elements
+function applyI18n(messages) {
+    t = messages;
+    for (const el of document.querySelectorAll('[data-i18n]')) {
+        const key = el.getAttribute('data-i18n');
+        if (messages[key]) el.textContent = messages[key];
+    }
+}
+
+// Load UI messages with loading overlay (shows spinner if translation needed)
+async function loadAndApplyUi(langCode) {
+    loadingOverlay.classList.add('show');
+    try {
+        const messages = await loadUiMessages(langCode);
+        applyI18n(messages);
+    } finally {
+        loadingOverlay.classList.remove('show');
+    }
+}
+
 // Live update
 textColorEl.addEventListener('input', () => {
     textColorHex.textContent = textColorEl.value;
@@ -102,8 +112,8 @@ bgColorEl.addEventListener('input', () => {
 bgEnabledEl.addEventListener('change', updatePreview);
 fontSizeEl.addEventListener('change', updatePreview);
 
-// Load settings
-getSettings().then((settings) => {
+// Load settings and apply UI
+getSettings().then(async (settings) => {
     targetLangEl.value = settings.targetLang;
     textColorEl.value = settings.translationTextColor || DEFAULTS.translationTextColor;
     textColorHex.textContent = textColorEl.value;
@@ -115,9 +125,13 @@ getSettings().then((settings) => {
     selEnabledEl.checked = settings.selectionTranslate !== false;
     selAutoPopupEl.checked = !!settings.selectionAutoPopup;
     selLangEl.value = settings.selectionTargetLang || DEFAULTS.selectionTargetLang;
+    uiLangEl.value = settings.uiLang || DEFAULTS.uiLang;
     selAutoRow.style.display = selEnabledEl.checked ? '' : 'none';
     selLangRow.style.display = selEnabledEl.checked ? '' : 'none';
     updatePreview();
+
+    // Load and apply UI messages
+    await loadAndApplyUi(settings.uiLang);
 });
 
 // Reset FAB position
@@ -138,6 +152,11 @@ saveBtn.addEventListener('click', async () => {
     settings.selectionTranslate = selEnabledEl.checked;
     settings.selectionAutoPopup = selAutoPopupEl.checked;
     settings.selectionTargetLang = selLangEl.value;
+    settings.uiLang = uiLangEl.value;
     await saveSettings(settings);
+
+    // Load UI messages for new language (will translate if not cached)
+    await loadAndApplyUi(uiLangEl.value);
+
     showStatus(t.saved, true);
 });

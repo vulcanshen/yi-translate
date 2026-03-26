@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "譯",
-  "version": "1.5.0",
-  "description": "開源雙語對照翻譯。快速閱讀，無伺服器，無追蹤。",
+  "version": "1.6.0",
+  "description": "Open-source bilingual translation. Fast reading, no server, no tracking.",
 
   "icons": {
     "16": "icons/icon16.png",

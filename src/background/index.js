@@ -10,7 +10,7 @@ browser.runtime.onInstalled.addListener(() => {
     // 右鍵選單：在 PDF 頁面提供翻譯入口
     browser.contextMenus.create({
         id: 'yi-pdf-translate',
-        title: '譯 PDF ➜',
+        title: 'PDF ➜',
         documentUrlPatterns: [
             '*://*/*.pdf',
             '*://*/*.pdf?*',
@@ -166,6 +166,30 @@ browser.runtime.onMessage.addListener((message, sender) => {
                 } catch { /* tab may not have content script */ }
             }
             return { success: true };
+        })();
+    }
+
+    if (message.action === ACTION.TRANSLATE_UI) {
+        return (async () => {
+            try {
+                const { targetLang, texts } = message;
+                const langMap = { 'ZH-HANT': 'zh-TW', 'ZH-HANS': 'zh-CN' };
+                const tl = langMap[targetLang] || targetLang.toLowerCase();
+
+                // Translate all UI strings in one batch
+                const items = texts.map((text, i) => ({ id: String(i), text }));
+                const results = await translateBatch(items, targetLang);
+
+                // Return translated strings in order
+                const ordered = results
+                    .sort((a, b) => Number(a.id) - Number(b.id))
+                    .map((r) => r.translated);
+
+                return { success: true, results: ordered };
+            } catch (err) {
+                console.error('[譯] TRANSLATE_UI error:', err);
+                return { success: false, error: err.message };
+            }
         })();
     }
 

@@ -9,3 +9,15 @@ export async function getSettings() {
 export async function saveSettings(settings) {
     await browser.storage.local.set({ settings });
 }
+
+export async function getUiMessages(langCode) {
+    const result = await browser.storage.local.get('uiMessages');
+    return result.uiMessages?.[langCode] || null;
+}
+
+export async function saveUiMessages(langCode, messages) {
+    const result = await browser.storage.local.get('uiMessages');
+    const all = result.uiMessages || {};
+    all[langCode] = messages;
+    await browser.storage.local.set({ uiMessages: all });
+}
