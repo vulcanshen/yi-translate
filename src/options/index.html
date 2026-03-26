@@ -140,7 +140,7 @@
     </style>
 </head>
 <body>
-<h1 data-i18n="optionsTitle">譯 - Settings</h1>
+<h1 data-i18n="optionsTitle">Configuration</h1>
 <p class="subtitle" data-i18n="subtitle">Open-source bilingual translation</p>
 
 <fieldset>
@@ -158,6 +158,11 @@
     <div class="checkbox-row" style="margin-top: 12px;">
         <input type="checkbox" id="hidden-mode">
         <label for="hidden-mode" data-i18n="hiddenMode">Hidden mode (click to reveal translation)</label>
+    </div>
+
+    <div style="margin-top: 12px;">
+        <button id="reset-fab-btn" class="btn" style="background:#fff;color:#0066cc;border:1px solid #0066cc;" data-i18n="resetFab">Reset floating button position</button>
+        <span id="reset-fab-status" class="status"></span>
     </div>
 </fieldset>
 
@@ -204,12 +209,23 @@
     <legend data-i18n="configSection">Settings</legend>
     <label for="ui-lang" data-i18n="uiLangLabel">Settings UI language</label>
     <select id="ui-lang"></select>
+
+    <div style="margin-top: 12px;">
+        <button id="clear-ui-cache-btn" class="btn" style="background:#fff;color:#0066cc;border:1px solid #0066cc;" data-i18n="clearUiCache">Clear UI language cache</button>
+        <span id="clear-ui-cache-status" class="status"></span>
+    </div>
 </fieldset>
 
 <button id="save-btn" class="btn btn-primary" data-i18n="save">Save</button>
-<button id="reset-fab-btn" class="btn" style="margin-left:8px;background:#e0e0e0;color:#333;" data-i18n="resetFab">Reset floating button position</button>
 <span id="status" class="status"></span>
 <div id="loading-overlay" class="loading-overlay"><div class="loading-spinner"></div></div>
+<div id="confirm-overlay" class="loading-overlay" style="cursor:default;">
+    <div style="background:#fff;border-radius:10px;padding:24px;max-width:360px;box-shadow:0 4px 20px rgba(0,0,0,0.15);text-align:center;">
+        <p id="confirm-message" style="margin-bottom:16px;font-size:0.95em;color:#333;"></p>
+        <button id="confirm-yes" class="btn btn-primary" style="margin-right:8px;">OK</button>
+        <button id="confirm-no" class="btn" style="background:#e0e0e0;color:#333;">Cancel</button>
+    </div>
+</div>
 
 <script type="module" src="./index.js"></script>
 </body>

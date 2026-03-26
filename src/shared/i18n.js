@@ -1,5 +1,5 @@
 export const EN_MESSAGES = {
-    optionsTitle: '譯 - Settings',
+    optionsTitle: 'Configuration',
     subtitle: 'Open-source bilingual translation',
     configSection: 'Settings',
     uiLangLabel: 'Settings UI language',
@@ -38,6 +38,9 @@ export const EN_MESSAGES = {
     pdfFileAccess: 'Please enable "Allow access to file URLs" in extension settings',
     resetFab: 'Reset floating button position',
     resetFabDone: 'Reset done',
+    clearUiCache: 'Reset settings UI language',
+    clearUiCacheConfirm: 'This will reset the settings UI language to English. Continue?',
+    clearUiCacheDone: 'Done',
 };
 
 // Map browser language prefix → Google Translate language code (uppercase)

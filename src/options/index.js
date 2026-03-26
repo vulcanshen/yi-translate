@@ -135,9 +135,49 @@ getSettings().then(async (settings) => {
 });
 
 // Reset FAB position
+const resetFabStatus = document.getElementById('reset-fab-status');
 document.getElementById('reset-fab-btn').addEventListener('click', async () => {
     await browser.runtime.sendMessage({ action: ACTION.RESET_FAB });
-    showStatus(t.resetFabDone, true);
+    resetFabStatus.textContent = t.resetFabDone;
+    resetFabStatus.className = 'status show ok';
+    setTimeout(() => resetFabStatus.classList.remove('show'), 2000);
+});
+
+// Confirm dialog helper
+const confirmOverlay = document.getElementById('confirm-overlay');
+const confirmMessage = document.getElementById('confirm-message');
+const confirmYes = document.getElementById('confirm-yes');
+const confirmNo = document.getElementById('confirm-no');
+
+function showConfirm(message) {
+    return new Promise((resolve) => {
+        confirmMessage.textContent = message;
+        confirmOverlay.classList.add('show');
+        const cleanup = (result) => {
+            confirmOverlay.classList.remove('show');
+            confirmYes.removeEventListener('click', onYes);
+            confirmNo.removeEventListener('click', onNo);
+            resolve(result);
+        };
+        const onYes = () => cleanup(true);
+        const onNo = () => cleanup(false);
+        confirmYes.addEventListener('click', onYes);
+        confirmNo.addEventListener('click', onNo);
+    });
+}
+
+// Clear UI language cache
+const clearUiCacheStatus = document.getElementById('clear-ui-cache-status');
+document.getElementById('clear-ui-cache-btn').addEventListener('click', async () => {
+    const confirmed = await showConfirm(t.clearUiCacheConfirm);
+    if (!confirmed) return;
+
+    await browser.storage.local.set({ uiMessages: {} });
+    uiLangEl.value = 'EN';
+    applyI18n(EN_MESSAGES);
+    clearUiCacheStatus.textContent = t.clearUiCacheDone;
+    clearUiCacheStatus.className = 'status show ok';
+    setTimeout(() => clearUiCacheStatus.classList.remove('show'), 2000);
 });
 
 // Save

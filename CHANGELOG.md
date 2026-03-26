@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.1] - 2026-03-26
+
+- 設定頁面標題改為 Configuration，避免品牌名「譯」被翻譯成奇怪的結果
+- 重置浮動按鈕移至全文翻譯區塊內，完成提示顯示在按鈕旁邊
+- 新增「Reset settings UI language」按鈕，可清除語系翻譯快取並重置為英文
+- 清除語系快取前新增確認對話框
+- 按鈕風格統一為白底藍字藍邊框（outline style）
+
 ## [1.6.0] - 2026-03-26
 
 - 設定介面語系全面動態化：移除硬編碼的 5 語系翻譯，改為透過 Google Translate 即時翻譯並快取至 storage，支援所有 Google Translate 語言
