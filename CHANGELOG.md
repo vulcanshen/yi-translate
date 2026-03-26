@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.2] - 2026-03-26
+
+- 新增 SPA 動態內容支援：透過 MutationObserver 偵測頁面新增的 DOM 節點，自動翻譯動態載入的內容（如 GitHub 頁面切換、無限滾動等）
+- 翻譯失敗時在翻譯區塊內嵌顯示紅色錯誤訊息（✕ + 錯誤原因），取代原本靜默移除佔位元素的行為
+
 ## [1.6.1] - 2026-03-26
 
 - 設定頁面標題改為 Configuration，避免品牌名「譯」被翻譯成奇怪的結果

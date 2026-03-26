@@ -55,6 +55,7 @@ let busy = false;
 let nextId = 0;
 let hiddenMode = false;
 let revealedIds = new Set();
+let domObserver = null;
 
 const HIDDEN_CLASS = 'yi-hidden';
 const SKIP_SELECTOR = Array.from(SKIP_TAGS).join(',');
@@ -482,16 +483,31 @@ async function flushPending() {
                 });
 
                 const response = await sendWithRetry(items);
-                if (!response) return;
+                if (!response) {
+                    if (enabled) {
+                        // Show error on placeholders (disabled case: placeholders will be hidden by disable())
+                        for (const item of items) {
+                            const ph = document.querySelector(`[data-yi-for="${item.id}"].yi-loading`);
+                            if (ph) {
+                                ph.textContent = `✕ ${t.selectionError}`;
+                                ph.classList.remove('yi-loading');
+                                ph.style.color = '#c62828';
+                            }
+                        }
+                    }
+                    return;
+                }
 
                 if (!response.success) {
                     console.warn('[譯] Batch failed, skipping:', response.error);
-                    // Remove failed placeholders
+                    const errMsg = response.error || t.selectionError;
                     for (const item of items) {
                         const ph = document.querySelector(`[data-yi-for="${item.id}"].yi-loading`);
-                        if (ph) ph.remove();
-                        const el = document.querySelector(`[${ID_ATTR}="${item.id}"]`);
-                        if (el) el.removeAttribute(TRANSLATED_ATTR);
+                        if (ph) {
+                            ph.textContent = `✕ ${errMsg}`;
+                            ph.classList.remove('yi-loading');
+                            ph.style.color = '#c62828';
+                        }
                     }
                     continue;
                 }
@@ -574,6 +590,32 @@ function observeAll() {
     }
 }
 
+function startDomObserver() {
+    if (domObserver) domObserver.disconnect();
+    domObserver = new MutationObserver((mutations) => {
+        if (!enabled || !observer) return;
+        for (const mutation of mutations) {
+            for (const node of mutation.addedNodes) {
+                if (node.nodeType !== Node.ELEMENT_NODE) continue;
+                // Skip our own injected elements
+                if (node.classList && (node.classList.contains(TRANSLATION_CLASS) || node.id === 'yi-fab-host' || node.id === 'yi-sel-host')) continue;
+                // Check the node itself
+                if (node.matches && node.matches(TRANSLATABLE_SELECTOR) && !shouldSkip(node)) {
+                    observer.observe(node);
+                }
+                // Check children
+                const children = node.querySelectorAll ? node.querySelectorAll(TRANSLATABLE_SELECTOR) : [];
+                for (const child of children) {
+                    if (!shouldSkip(child)) {
+                        observer.observe(child);
+                    }
+                }
+            }
+        }
+    });
+    domObserver.observe(document.body, { childList: true, subtree: true });
+}
+
 async function enable() {
     enabled = true;
     busy = false;
@@ -593,6 +635,7 @@ async function enable() {
 
     createObserver();
     observeAll();
+    startDomObserver();
 
     updateFabAppearance();
 }
@@ -607,6 +650,10 @@ function disable() {
     }
     pending.clear();
 
+    if (domObserver) {
+        domObserver.disconnect();
+        domObserver = null;
+    }
     if (observer) {
         observer.disconnect();
         observer = null;
