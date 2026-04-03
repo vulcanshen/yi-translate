@@ -229,6 +229,20 @@ function createFab() {
         .fab-btn:hover {
             box-shadow: 0 4px 16px rgba(0,0,0,0.25);
         }
+        .fab-wrap.fab-enter {
+            animation: fab-enter 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        .fab-wrap.fab-leave {
+            animation: fab-leave 0.2s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+        }
+        @keyframes fab-enter {
+            0%   { opacity: 0; transform: scale(0) rotate(-180deg); }
+            100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+        @keyframes fab-leave {
+            0%   { opacity: 1; transform: scale(1) rotate(0deg); }
+            100% { opacity: 0; transform: scale(0) rotate(180deg); }
+        }
     `;
 
     const wrap = document.createElement('div');
@@ -794,10 +808,42 @@ browser.storage.onChanged.addListener((changes) => {
         hiddenMode = !!newVal.hiddenMode;
         applyHiddenMode();
     }
+
+    if (!!oldVal.showFab !== !!newVal.showFab) {
+        setFabVisible(newVal.showFab !== false);
+    }
 });
 
 // Create floating button on load
 createFab();
+
+function setFabVisible(visible) {
+    if (!fabHost || !fabWrap) return;
+    if (visible) {
+        fabHost.style.display = '';
+        fabWrap.classList.remove('fab-leave');
+        fabWrap.classList.add('fab-enter');
+        const onEnd = () => {
+            fabWrap.classList.remove('fab-enter');
+            fabWrap.removeEventListener('animationend', onEnd);
+        };
+        fabWrap.addEventListener('animationend', onEnd);
+    } else {
+        fabWrap.classList.remove('fab-enter');
+        fabWrap.classList.add('fab-leave');
+        const onEnd = () => {
+            fabHost.style.display = 'none';
+            fabWrap.classList.remove('fab-leave');
+            fabWrap.removeEventListener('animationend', onEnd);
+        };
+        fabWrap.addEventListener('animationend', onEnd);
+    }
+}
+
+// Apply showFab setting on load
+getSettings().then((s) => {
+    if (s.showFab === false && fabHost) fabHost.style.display = 'none';
+});
 
 // ─── TTS (Text-to-Speech) ────────────────────────────────────────────
 

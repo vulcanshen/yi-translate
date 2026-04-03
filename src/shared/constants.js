@@ -54,6 +54,7 @@ export const DEFAULTS = {
   selectionTranslate: true,
   translationFontSize: '14',
   hiddenMode: false,
+  showFab: true,
   selectionAutoPopup: false,
   selectionTargetLang: detectDefaultTargetLang(),
   uiLang: detectDefaultUiLang(),

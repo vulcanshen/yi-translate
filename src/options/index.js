@@ -7,6 +7,7 @@ import { loadUiMessages } from '../shared/ui-i18n.js';
 const uiLangEl = document.getElementById('ui-lang');
 const targetLangEl = document.getElementById('target-lang');
 const hiddenModeEl = document.getElementById('hidden-mode');
+const showFabEl = document.getElementById('show-fab');
 const selEnabledEl = document.getElementById('selection-enabled');
 const selAutoPopupEl = document.getElementById('selection-auto-popup');
 const selAutoRow = document.getElementById('selection-auto-row');
@@ -20,7 +21,6 @@ const bgColorEl = document.getElementById('bg-color');
 const bgColorHex = document.getElementById('bg-color-hex');
 const bgColorRow = document.getElementById('bg-color-row');
 const previewEl = document.getElementById('preview');
-const saveBtn = document.getElementById('save-btn');
 const statusEl = document.getElementById('status');
 
 const loadingOverlay = document.getElementById('loading-overlay');
@@ -122,6 +122,7 @@ getSettings().then(async (settings) => {
     bgColorHex.textContent = bgColorEl.value;
     fontSizeEl.value = settings.translationFontSize || DEFAULTS.translationFontSize;
     hiddenModeEl.checked = !!settings.hiddenMode;
+    showFabEl.checked = settings.showFab !== false;
     selEnabledEl.checked = settings.selectionTranslate !== false;
     selAutoPopupEl.checked = !!settings.selectionAutoPopup;
     selLangEl.value = settings.selectionTargetLang || DEFAULTS.selectionTargetLang;
@@ -180,8 +181,8 @@ document.getElementById('clear-ui-cache-btn').addEventListener('click', async ()
     setTimeout(() => clearUiCacheStatus.classList.remove('show'), 2000);
 });
 
-// Save
-saveBtn.addEventListener('click', async () => {
+// Auto-save: collect current form state and persist
+async function autoSave({ silent = false } = {}) {
     const settings = await getSettings();
     settings.targetLang = targetLangEl.value;
     settings.translationTextColor = textColorEl.value;
@@ -189,14 +190,27 @@ saveBtn.addEventListener('click', async () => {
     settings.translationBgColor = bgColorEl.value;
     settings.translationFontSize = fontSizeEl.value;
     settings.hiddenMode = hiddenModeEl.checked;
+    settings.showFab = showFabEl.checked;
     settings.selectionTranslate = selEnabledEl.checked;
     settings.selectionAutoPopup = selAutoPopupEl.checked;
     settings.selectionTargetLang = selLangEl.value;
     settings.uiLang = uiLangEl.value;
     await saveSettings(settings);
+    if (!silent) showStatus(t.saved, true);
+}
 
-    // Load UI messages for new language (will translate if not cached)
+// Listen for changes on all form controls to auto-save
+for (const el of [targetLangEl, fontSizeEl, hiddenModeEl, showFabEl, selEnabledEl, selAutoPopupEl, selLangEl, bgEnabledEl]) {
+    el.addEventListener('change', autoSave);
+}
+
+// Color inputs: save on change (mouse release), not on every input drag
+textColorEl.addEventListener('change', autoSave);
+bgColorEl.addEventListener('change', autoSave);
+
+// UI language: auto-save + reload UI messages, show status in new language
+uiLangEl.addEventListener('change', async () => {
+    await autoSave({ silent: true });
     await loadAndApplyUi(uiLangEl.value);
-
     showStatus(t.saved, true);
 });
