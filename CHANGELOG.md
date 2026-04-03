@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.0] - 2026-04-03
+
+- 設定頁面所有 checkbox 改為 switch 開關按鈕樣式
+- 移除儲存按鈕，所有設定變更即時自動儲存
+- 新增「顯示浮動按鈕」設定，可隱藏浮動按鈕（方便截圖時不被遮擋），附帶旋轉縮放動畫
+- 重置按鈕改為小型 icon 按鈕，移至各區塊右上角
+- 「已儲存」通知移至標題旁顯示
+- 切換顯示語言後，儲存通知改用新語言顯示
+- 調整設定頁文案：改用「Configuration display language」、「Restore」等更清晰的用語
+- 移除設定頁副標題及 Google Translate 提示文字
+- 更新 README 反映新功能
+
 ## [1.6.2] - 2026-03-26
 
 - 新增 SPA 動態內容支援：透過 MutationObserver 偵測頁面新增的 DOM 節點，自動翻譯動態載入的內容（如 GitHub 頁面切換、無限滾動等）
