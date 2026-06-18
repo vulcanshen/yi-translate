@@ -927,6 +927,7 @@ let selEnabled = true;
 let selAutoPopup = false;
 let selDefaultLang = '';
 let selRect = null;
+let selDetectedSrcLang = '';
 
 function createSelHost() {
     selHost = document.createElement('div');
@@ -1197,14 +1198,14 @@ function showPopup() {
     originalText.className = 'sel-original-text';
     originalText.textContent = selText;
 
-    const pageLang = document.documentElement.lang || 'en';
     const originalTts = document.createElement('button');
     originalTts.className = 'sel-tts-btn';
     originalTts.appendChild(createTtsIcon());
     originalTts.addEventListener('click', (e) => {
         e.stopPropagation();
         if (activeTtsBtn === originalTts) { stopSpeech(); return; }
-        speakText(selText, pageLang, originalTts);
+        const lang = selDetectedSrcLang || document.documentElement.lang || 'en';
+        speakText(selText, lang, originalTts);
     });
 
     original.appendChild(originalText);
@@ -1278,6 +1279,8 @@ async function doSelectionTranslate() {
     const existingTts = selPopupEl.querySelector('.sel-body-wrap .sel-tts-btn');
     if (existingTts) existingTts.remove();
 
+    selDetectedSrcLang = '';
+
     try {
         const response = await browser.runtime.sendMessage({
             action: ACTION.TRANSLATE,
@@ -1287,6 +1290,7 @@ async function doSelectionTranslate() {
         if (!selPopupEl) return; // dismissed while waiting
         if (response && response.success && response.results && response.results.length > 0) {
             const translated = response.results[0].translated;
+            if (response.srcLang) selDetectedSrcLang = response.srcLang;
             body.className = 'sel-body-text';
             body.textContent = translated;
 
@@ -1325,6 +1329,7 @@ function dismissSelection() {
     }
     selText = '';
     selRect = null;
+    selDetectedSrcLang = '';
 }
 
 function initSelectionTranslate() {

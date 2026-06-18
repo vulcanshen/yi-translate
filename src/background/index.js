@@ -71,11 +71,15 @@ async function sendChunk(items, tl) {
     const data = await res.json();
     const fullTranslation = data[0].map((chunk) => chunk[0]).join('');
     const parts = fullTranslation.split('\n');
+    const src = typeof data[2] === 'string' ? data[2] : '';
 
-    return items.map((it, i) => ({
-        id: it.id,
-        translated: parts[i] !== undefined ? parts[i] : it.text,
-    }));
+    return {
+        results: items.map((it, i) => ({
+            id: it.id,
+            translated: parts[i] !== undefined ? parts[i] : it.text,
+        })),
+        src,
+    };
 }
 
 /**
@@ -87,13 +91,15 @@ async function translateBatch(items, targetLang) {
     const tl = langMap[targetLang] || targetLang.toLowerCase();
 
     const results = [];
+    let srcLang = '';
     let chunk = [];
     let chunkLen = 0;
 
     for (const item of items) {
         const textLen = item.text.length;
         if (chunkLen + textLen + 1 > MAX_QUERY_LENGTH && chunk.length > 0) {
-            const translated = await sendChunk(chunk, tl);
+            const { results: translated, src } = await sendChunk(chunk, tl);
+            if (!srcLang && src) srcLang = src;
             results.push(...translated);
             chunk = [];
             chunkLen = 0;
@@ -103,11 +109,12 @@ async function translateBatch(items, targetLang) {
     }
 
     if (chunk.length > 0) {
-        const translated = await sendChunk(chunk, tl);
+        const { results: translated, src } = await sendChunk(chunk, tl);
+        if (!srcLang && src) srcLang = src;
         results.push(...translated);
     }
 
-    return results;
+    return { results, srcLang };
 }
 
 // Message handler
@@ -205,8 +212,8 @@ browser.runtime.onMessage.addListener((message, sender) => {
                 return { success: true, results: [] };
             }
 
-            const results = await translateBatch(items, targetLang);
-            return { success: true, results };
+            const { results, srcLang } = await translateBatch(items, targetLang);
+            return { success: true, results, srcLang };
         } catch (err) {
             if (err.message === 'RATE_LIMITED') {
                 return { success: false, error: 'RATE_LIMITED', retryAfter: err.retryAfter };

@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.1] - 2026-06-18
+
+- 修正劃詞翻譯「原文」發音按鈕誤用頁面 `<html lang>` 的問題：在 google.com.tw 等中文介面網站選取英文時，原文發音會被當成中文念出（聽起來像中文口音念英文）。改用 Google Translate 偵測到的來源語言，與頁面語言脫鉤
+
 ## [1.7.0] - 2026-04-03
 
 - 設定頁面所有 checkbox 改為 switch 開關按鈕樣式
