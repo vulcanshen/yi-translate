@@ -4,6 +4,7 @@ import { ACTION, LANGUAGES, BATCH_SIZE } from '../shared/constants.js';
 import { getSettings } from '../shared/storage.js';
 import { EN_MESSAGES } from '../shared/i18n.js';
 import { loadUiMessages } from '../shared/ui-i18n.js';
+import { initSelectionTranslate } from '../shared/selection-translate.js';
 
 // pdf.js worker — copied to same directory by vite plugin
 GlobalWorkerOptions.workerSrc = './pdf.worker.min.mjs';
@@ -393,3 +394,6 @@ browser.storage.onChanged.addListener((changes) => {
 
 // ─── Start ───────────────────────────────────────────────────────────
 init();
+
+// Text-selection translation (with TTS, same as the content script)
+initSelectionTranslate({ getMessages: () => t, enableTts: true });
