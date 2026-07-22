@@ -16,6 +16,8 @@ browser.runtime.onInstalled.addListener(() => {
             '*://*/*.pdf?*',
             '*://*/*.PDF',
             '*://*/*.PDF?*',
+            'file:///*.pdf',
+            'file:///*.PDF',
         ],
         contexts: ['page', 'frame'],
     });

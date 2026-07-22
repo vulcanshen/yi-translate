@@ -72,7 +72,7 @@ async function init() {
 
     loadingText.textContent = t.pdfLoading;
 
-    if (pdfUrl.startsWith('file://')) {
+    if (pdfUrl.startsWith('file://') && !(await isFileAccessAllowed())) {
         showState('permission');
         permissionText.textContent = t.pdfFileAccess;
         permissionBtn.style.display = 'none';
@@ -80,6 +80,17 @@ async function init() {
     }
 
     await loadPdf();
+}
+
+// Chrome: whether the user granted "Allow access to file URLs".
+// Firefox / API absent — assume allowed and let the fetch surface any failure.
+function isFileAccessAllowed() {
+    return new Promise((resolve) => {
+        const api = typeof chrome !== 'undefined' && chrome.extension
+            && chrome.extension.isAllowedFileSchemeAccess;
+        if (api) chrome.extension.isAllowedFileSchemeAccess((ok) => resolve(ok));
+        else resolve(true);
+    });
 }
 
 function applyColors() {
@@ -131,6 +142,14 @@ function showPermissionPrompt(origin) {
 
 // ─── Fetch PDF via background ────────────────────────────────────────
 async function fetchPdfData() {
+    // file:// — the viewer is an extension page and can read local files
+    // directly once file access is granted; the service worker cannot fetch
+    // file:// URLs, so we don't route these through background.
+    if (pdfUrl.startsWith('file://')) {
+        const res = await fetch(pdfUrl);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return new Uint8Array(await res.arrayBuffer());
+    }
     const resp = await browser.runtime.sendMessage({
         action: ACTION.PDF_FETCH,
         url: pdfUrl,
