@@ -185,7 +185,7 @@ browser.runtime.onMessage.addListener((message, sender) => {
 
                 // Translate all UI strings in one batch
                 const items = texts.map((text, i) => ({ id: String(i), text }));
-                const results = await translateBatch(items, targetLang);
+                const { results } = await translateBatch(items, targetLang);
 
                 // Return translated strings in order
                 const ordered = results
