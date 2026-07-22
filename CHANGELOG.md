@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.8.0] - 2026-07-22
+
+- 新增 PDF 雙語對照頁面的劃詞翻譯:在「PDF ➜」開啟的翻譯頁中可直接選取文字即時翻譯,並支援 TTS 發音(原文與譯文)
+- 新增本地檔案(`file://`)PDF 翻譯支援:本機 PDF 現在也會出現右鍵「PDF ➜」選單。需先在擴充設定開啟「允許存取檔案網址」(詳見 README)
+- 劃詞翻譯發音改用 Web Audio 播放,解決在 GitHub 等嚴格 CSP(`media-src`)網站上按發音沒有聲音的問題
+- 修正設定頁切換「顯示語言」後,面板未翻譯的問題(切到尚未快取的語言時會 fallback 回英文)
+- 內部重構:劃詞翻譯抽為共用模組,供網頁與 PDF viewer 共用
+
 ## [1.7.1] - 2026-06-18
 
 - 修正劃詞翻譯「原文」發音按鈕誤用頁面 `<html lang>` 的問題：在 google.com.tw 等中文介面網站選取英文時，原文發音會被當成中文念出（聽起來像中文口音念英文）。改用 Google Translate 偵測到的來源語言，與頁面語言脫鉤
